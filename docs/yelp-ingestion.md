@@ -133,6 +133,63 @@ SK = REVIEW#...
 
 Only Matcha Scout user reviews contribute to drink taste profiles.
 
+## Full San Diego Curation Workflow
+
+After Yelp ingestion, use the manual curation script to add verified exact drinks.
+See [docs/manual-drink-curation.md](manual-drink-curation.md) for the complete workflow.
+
+### Step A — Yelp dry-run
+
+```bash
+docker compose exec api python -m app.ingest.yelp_san_diego \
+  --limit 10 --term matcha --location "San Diego, CA" \
+  --include-reviews --dry-run
+```
+
+### Step B — Yelp apply locally
+
+```bash
+docker compose exec api python -m app.ingest.yelp_san_diego \
+  --limit 20 --term matcha --location "San Diego, CA" \
+  --include-reviews --apply --local
+```
+
+### Step C — Create curation file with verified drinks
+
+```bash
+cp data/curation/san-diego-drinks.example.json data/curation/my-san-diego-drinks.json
+# Edit the file with real, verified drink data (see docs/manual-drink-curation.md)
+```
+
+Personal curation files (`my-*.json`, etc.) are gitignored via `data/curation/.gitignore`.
+
+### Step D — Dry-run manual curation
+
+```bash
+docker compose exec api python -m app.ingest.manual_drink_curation \
+  --file data/curation/my-san-diego-drinks.json --dry-run
+```
+
+### Step E — Apply manual curation locally
+
+```bash
+docker compose exec api python -m app.ingest.manual_drink_curation \
+  --file data/curation/my-san-diego-drinks.json --apply --local
+```
+
+### Step F — Verify
+
+```bash
+# List SD cafes
+curl http://localhost:8000/cafes | python3 -m json.tool
+
+# Check drinks under a specific cafe
+curl http://localhost:8000/cafes/<cafe_id>/drinks | python3 -m json.tool
+```
+
 ## Future Direction
 
-Yelp can help seed real cafes, but exact matcha drink entries should come from user submissions or manual curation. A future phase could add user-submitted real drinks/reviews, moderation, and stronger admin tooling.
+Yelp populates real cafe metadata. Exact matcha drink entries come from user submissions
+or manual curation (see [docs/manual-drink-curation.md](manual-drink-curation.md)).
+Production ingestion and curation writes will be supported in a future phase once
+production write safety tooling is finalized.
