@@ -12,6 +12,7 @@ const BASE_URL =
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
+    cache: "no-store", // Never serve stale data from Next.js fetch cache
     ...options,
     headers: { "Content-Type": "application/json", ...options?.headers },
   });
@@ -30,6 +31,10 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 export async function getCafes(): Promise<Cafe[]> {
   return apiFetch<Cafe[]>("/cafes");
+}
+
+export async function getCafe(id: string): Promise<Cafe> {
+  return apiFetch<Cafe>(`/cafes/${id}`);
 }
 
 export async function getDrinks(): Promise<Drink[]> {

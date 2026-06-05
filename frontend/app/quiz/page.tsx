@@ -38,8 +38,8 @@ export default function QuizPage() {
       </div>
 
       <div className="grid md:grid-cols-[1fr_1.5fr] gap-8 items-start">
-        {/* Quiz form */}
-        <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-6 sticky top-6">
+        {/* Quiz form — sticky only on desktop (md+) where two columns are visible */}
+        <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-6 md:sticky md:top-6">
           <h2 className="font-semibold text-green-900 mb-5">Your Preferences</h2>
           <PreferenceQuiz onSubmit={handleSubmit} loading={loading} />
         </div>

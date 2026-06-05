@@ -12,15 +12,15 @@ interface Props {
   initialDrink: Drink;
   initialProfile: TasteProfile;
   initialReviews: Review[];
+  cafeName?: string;
 }
 
-// Client component — handles only interactive state (review submission, local updates)
-// Initial data is server-fetched and passed as props
 export default function DrinkDetailClient({
   drinkId,
-  initialDrink,
+  initialDrink: drink,
   initialProfile,
   initialReviews,
+  cafeName,
 }: Props) {
   const [profile, setProfile] = useState<TasteProfile>(initialProfile);
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
@@ -28,7 +28,6 @@ export default function DrinkDetailClient({
 
   async function handleReviewSubmitted(review: Review) {
     setLatestReview(review);
-    // Refresh profile + reviews after aggregation update (triggered by user action, not an effect)
     try {
       const [updatedProfile, updatedReviews] = await Promise.all([
         getTasteProfile(drinkId),
@@ -37,11 +36,9 @@ export default function DrinkDetailClient({
       setProfile(updatedProfile);
       setReviews(updatedReviews);
     } catch {
-      // non-critical — the review was submitted; display update can fail silently
+      // non-critical — review was saved; local state update can fail silently
     }
   }
-
-  const drink = initialDrink;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -54,12 +51,15 @@ export default function DrinkDetailClient({
 
       {/* Header */}
       <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-6 mb-6">
-        <div className="flex items-start justify-between gap-4 mb-3">
+        <div className="flex items-start justify-between gap-4 mb-1">
           <h1 className="text-2xl font-bold text-green-900">{drink.name}</h1>
           <span className="text-green-700 font-semibold text-xl shrink-0">
             ${drink.price.toFixed(2)}
           </span>
         </div>
+        {cafeName && (
+          <p className="text-sm text-green-600 mb-3">{cafeName}</p>
+        )}
         <p className="text-gray-600 leading-relaxed mb-4">{drink.description}</p>
         <div className="flex flex-wrap gap-2">
           {drink.milk_options.map((m) => (
@@ -81,8 +81,9 @@ export default function DrinkDetailClient({
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-green-900">Taste Profile</h2>
           <span className="text-xs text-gray-400">
-            Based on {profile.review_count} {profile.review_count === 1 ? "review" : "reviews"}
-            {profile.review_count === 0 && " — seed data"}
+            {profile.review_count === 0
+              ? "Seed data — no reviews yet"
+              : `${profile.review_count} ${profile.review_count === 1 ? "review" : "reviews"}`}
           </span>
         </div>
         <TasteBars profile={profile} />
@@ -122,8 +123,8 @@ export default function DrinkDetailClient({
       <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-6 mb-6">
         <h2 className="font-semibold text-green-900 mb-1">Submit a Review</h2>
         <p className="text-xs text-gray-500 mb-4">
-          Describe what you tasted. The AI will parse your words into taste ratings that update
-          this drink&apos;s profile.
+          Describe what you tasted. The AI parses your words into structured taste ratings and
+          updates this drink&apos;s profile.
         </p>
         <ReviewForm drinkId={drinkId} onSubmitted={handleReviewSubmitted} />
       </div>
@@ -134,21 +135,17 @@ export default function DrinkDetailClient({
           Community Reviews ({reviews.length})
         </h2>
         {reviews.length === 0 ? (
-          <p className="text-sm text-gray-500">No reviews yet. Be the first!</p>
+          <p className="text-sm text-gray-500">No reviews yet — be the first!</p>
         ) : (
           <div className="space-y-4">
             {reviews.map((r) => (
               <div key={r.id} className="border-b border-green-50 pb-4 last:border-0 last:pb-0">
                 <p className="text-sm text-gray-700 mb-2 italic">&ldquo;{r.raw_text}&rdquo;</p>
-                <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
                   <span>Strength: <strong>{r.parsed_strength}</strong></span>
-                  <span>·</span>
                   <span>Sweetness: <strong>{r.parsed_sweetness}</strong></span>
-                  <span>·</span>
                   <span>Creaminess: <strong>{r.parsed_creaminess}</strong></span>
-                  <span>·</span>
                   <span>Earthiness: <strong>{r.parsed_earthiness}</strong></span>
-                  <span>·</span>
                   <span>Bitterness: <strong>{r.parsed_bitterness}</strong></span>
                 </div>
                 {r.tags && r.tags.length > 0 && (
@@ -160,7 +157,7 @@ export default function DrinkDetailClient({
                 )}
                 <p className="text-xs text-gray-400 mt-1">
                   {new Date(r.submitted_at).toLocaleDateString()}
-                  {r.confidence != null && ` · confidence ${(r.confidence * 100).toFixed(0)}%`}
+                  {r.confidence != null && ` · ${(r.confidence * 100).toFixed(0)}% confidence`}
                 </p>
               </div>
             ))}

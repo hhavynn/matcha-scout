@@ -169,3 +169,30 @@ matcha-scout/
 - Rebuild after `requirements.txt` changes: `docker compose up --build`
 - DynamoDB data is in-memory — re-run `create_tables` + `seed_data` after `docker compose down`
 - Frontend is Next.js 16 App Router — server components fetch data directly, client components handle interactivity only
+- AWS is **not required** for local development — everything runs in Docker and Node
+
+---
+
+## Troubleshooting
+
+**Docker not running**
+Start Docker Desktop, then re-run `docker compose up --build -d`.
+
+**Frontend can't connect to backend (drinks page shows error)**
+1. Confirm backend is healthy: `curl http://localhost:8000/health`
+2. Confirm `frontend/.env.local` contains `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000`
+3. Restart `npm run dev` after editing `.env.local`
+
+**Drinks/reviews missing (DynamoDB data wiped)**
+Every `docker compose down` wipes the in-memory DynamoDB. Re-run:
+```bash
+docker compose exec api python -m app.seed.create_tables
+docker compose exec api python -m app.seed.seed_data
+```
+
+**Gemini key missing (`USE_MOCK_AI=false` but no key)**
+The API returns a 500 with: *"Gemini is not configured. Set GEMINI_API_KEY..."*
+Either add your key to `.env`, or set `USE_MOCK_AI=true` for local dev.
+
+**Full QA checklist**
+See [`docs/local-qa-checklist.md`](docs/local-qa-checklist.md) for browser-by-browser testing steps and screenshot guidance.

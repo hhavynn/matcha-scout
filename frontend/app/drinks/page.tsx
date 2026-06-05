@@ -3,7 +3,9 @@ import ErrorState from "@/components/ErrorState";
 import { getDrinks, getCafes } from "@/lib/api";
 import type { Cafe } from "@/lib/types";
 
-// Server component — data is fetched on the server, no useState/useEffect needed
+// Always fetch fresh data on every request — drinks change as users add reviews
+export const dynamic = "force-dynamic";
+
 export default async function DrinksPage() {
   let errorMsg: string | null = null;
   let drinks = [] as Awaited<ReturnType<typeof getDrinks>>;
