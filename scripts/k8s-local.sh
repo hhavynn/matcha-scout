@@ -37,6 +37,7 @@ load_images() {
 
 apply_manifests() {
   need kubectl
+  kubectl apply -f "$ROOT_DIR/k8s/local/namespace.yaml"
   kubectl apply -f "$ROOT_DIR/k8s/local/"
   kubectl rollout status deployment/dynamodb-local -n "$NAMESPACE"
   kubectl rollout status deployment/matcha-scout-api -n "$NAMESPACE"

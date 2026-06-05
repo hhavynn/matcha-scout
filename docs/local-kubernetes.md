@@ -53,6 +53,36 @@ The local manifests live in `k8s/local/`:
 
 The helper script is `scripts/k8s-local.sh`.
 
+## Validated Workflow
+
+The local kind workflow was validated on June 5, 2026 with:
+
+- Docker `29.5.2`
+- kubectl client `v1.34.1`
+- kind `v0.32.0`
+
+The working command sequence was:
+
+```bash
+docker build -t matcha-scout-api:local ./backend
+docker build -t matcha-scout-frontend:local ./frontend
+kind create cluster --name matcha-scout-local
+kind load docker-image matcha-scout-api:local --name matcha-scout-local
+kind load docker-image matcha-scout-frontend:local --name matcha-scout-local
+kubectl apply -f k8s/local/namespace.yaml
+kubectl apply -f k8s/local/
+kubectl exec -n matcha-scout-local deploy/matcha-scout-api -- python -m app.seed.create_tables
+kubectl exec -n matcha-scout-local deploy/matcha-scout-api -- python -m app.seed.seed_data
+```
+
+The helper script was also validated for:
+
+```bash
+scripts/k8s-local.sh status
+scripts/k8s-local.sh apply
+scripts/k8s-local.sh seed
+```
+
 ## Create The Cluster
 
 ```bash
@@ -108,10 +138,13 @@ scripts/k8s-local.sh load-images
 ## Apply Manifests
 
 ```bash
+kubectl apply -f k8s/local/namespace.yaml
 kubectl apply -f k8s/local/
 kubectl get pods -n matcha-scout-local
 kubectl get svc -n matcha-scout-local
 ```
+
+Apply the namespace first so beginner-friendly directory applies do not race namespace creation on a fresh cluster.
 
 Wait until all pods are `Running` and ready.
 
@@ -163,7 +196,15 @@ Then in another terminal:
 curl http://localhost:8000/health
 curl http://localhost:8000/cafes
 curl http://localhost:8000/drinks
+curl "http://localhost:8000/recommendations?matcha_strength=5&sweetness=2&creaminess=3&earthiness=5&bitterness=3&price_max=8&milk_type=oat&limit=5"
 ```
+
+Expected API smoke results:
+
+- `/health` returns `{"status":"ok","service":"matcha-scout-api"}`
+- `/cafes` returns 5 cafes
+- `/drinks` returns 10 drinks
+- `/recommendations` returns ranked results
 
 Open one terminal for the frontend:
 
@@ -176,7 +217,14 @@ Then in another terminal:
 ```bash
 curl -I http://localhost:3000
 curl -I http://localhost:3000/drinks
+curl -I http://localhost:3000/quiz
 ```
+
+Expected frontend smoke results:
+
+- `/` returns HTTP 200
+- `/drinks` returns HTTP 200
+- `/quiz` returns HTTP 200
 
 Visit `http://localhost:3000` in a browser.
 
