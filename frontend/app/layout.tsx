@@ -3,9 +3,21 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Matcha Scout",
+  metadataBase: new URL("https://matcha-scout.vercel.app"),
+  title: {
+    default: "Matcha Scout",
+    template: "%s | Matcha Scout",
+  },
   description:
-    "Find matcha drinks ranked by your taste preferences. AI-parsed community reviews, transparent scoring.",
+    "Find matcha drinks ranked by your taste preferences with AI-parsed reviews and transparent scoring.",
+  openGraph: {
+    title: "Matcha Scout",
+    description:
+      "AI-powered matcha discovery with taste profiles, explainable recommendations, and community reviews.",
+    url: "https://matcha-scout.vercel.app",
+    siteName: "Matcha Scout",
+    type: "website",
+  },
 };
 
 /* ── Geometric matcha-bowl mark ───────────────────────────────────────── */

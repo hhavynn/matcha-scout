@@ -1,92 +1,102 @@
 # Matcha Scout
 
-An AI-powered matcha discovery and recommendation app. Submit free-text reviews; Gemini Flash parses them into structured taste profiles. A deterministic weighted scoring engine ranks drinks against your preferences — no guessing, fully explainable.
+AI-powered matcha discovery app that turns free-text reviews into taste profiles and ranks cafe drinks against a user's preferences.
 
-> **Sample data notice:** All cafe names, drink names, prices, and descriptions are entirely fictional and for demonstration purposes only.
+> Sample data notice: all cafe names, drink names, prices, and descriptions are fictional and for demonstration only.
 
----
+## Live Demo
 
-## What's built
+- Frontend: [https://matcha-scout.vercel.app](https://matcha-scout.vercel.app)
+- API: [https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com](https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com)
+- API health check: [https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com/health](https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com/health)
 
-| Phase | What it covers |
+## What It Does
+
+Matcha Scout helps people find matcha drinks that fit how they actually like matcha: strong or mild, sweet or unsweetened, creamy or clean, earthy or mellow. Users can browse fictional cafe drinks, take a preference quiz, receive explainable recommendations, and submit natural-language reviews. Reviews can be parsed into structured taste dimensions using Gemini, while the deployed backend currently defaults to safe mock parsing.
+
+## Why It Is Interesting
+
+- Combines a product-style frontend with a real deployed serverless backend.
+- Uses AI for structured review parsing, then keeps recommendations deterministic and explainable.
+- Models cafe/drink/review/taste-profile data in DynamoDB with local and production paths.
+- Includes Docker Compose local development plus a verified local Kubernetes demo with kind.
+- Keeps production cost-conscious: Lambda, API Gateway, and DynamoDB instead of EKS, RDS, EC2, or NAT Gateway.
+
+## Tech Stack
+
+| Area | Stack |
 |---|---|
-| **1** | FastAPI + DynamoDB Local + Docker Compose backend skeleton |
-| **2** | AI review parsing with Gemini Flash + mock parser + taste profile aggregation |
-| **3** | Deterministic recommendation/ranking engine with weighted scoring |
-| **4** | Next.js 16 frontend — landing page, preference quiz, drinks browser, drink detail + review form |
-| **5** | Claude Design UI — premium matcha aesthetic, guided quiz, match ring, mobile bottom tab bar |
-| **6** | AWS prep — Lambda/Mangum adapter, SAM template, cost-safety docs |
-| **7** | AWS backend deployed — Lambda + DynamoDB + API Gateway live in `us-west-2` |
-| **8** | Frontend deployed to Vercel and connected to the live AWS backend |
+| Frontend | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS |
+| Backend | FastAPI, Python, Pydantic, Mangum |
+| AI | Gemini structured-output parsing supported, mock parser for safe/default operation |
+| Database | DynamoDB in AWS, DynamoDB Local for local Docker/kind workflows |
+| Cloud | Vercel frontend, AWS Lambda, API Gateway HTTP API, DynamoDB |
+| DevOps | Docker Compose, Dockerfiles, AWS SAM, kind, Kubernetes manifests |
+| Validation | pytest backend tests, ESLint, Next.js production build, curl smoke tests |
 
-## Live production
+## Architecture
 
-The frontend is deployed to Vercel:
+```mermaid
+flowchart LR
+  User["User Browser"] --> Vercel["Vercel Next.js Frontend"]
+  Vercel --> Gateway["AWS API Gateway"]
+  Gateway --> Lambda["AWS Lambda<br/>FastAPI + Mangum"]
+  Lambda --> Dynamo["DynamoDB"]
+  Lambda -. "optional review parsing" .-> Gemini["Gemini API"]
 
-```
-https://matcha-scout.vercel.app
-```
-
-The backend is deployed to AWS Lambda + API Gateway:
-
-```
-https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com
-```
-
-Production Vercel uses this required environment variable:
-
-```
-NEXT_PUBLIC_API_BASE_URL=https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com
+  subgraph Local["Local development and demo"]
+    Compose["Docker Compose or kind"] --> LocalApi["FastAPI API"]
+    LocalApi --> LocalDdb["DynamoDB Local"]
+    LocalFrontend["Next.js Frontend"] --> LocalApi
+  end
 ```
 
-## AWS deployment
+Production Kubernetes is intentionally not used. Kubernetes manifests are local-only for learning and demo purposes.
 
-The backend is deployed with AWS SAM. Local development is unchanged.
+## Key Features
 
-- Lambda handler: `backend/app/lambda_handler.py` (Mangum ASGI adapter)
-- SAM template: `infra/aws/template.yaml` (Lambda + DynamoDB + API Gateway HTTP API)
-- Setup guide: [`docs/aws-deployment-prep.md`](docs/aws-deployment-prep.md)
-- Deployment runbook: [`docs/phase-7-deployment-runbook.md`](docs/phase-7-deployment-runbook.md)
+- Preference quiz across five taste dimensions.
+- Explainable recommendation scoring with match percentages and reasons.
+- Browse page with search, filters, sorting, cafe names, and drink cards.
+- Drink detail page with taste profile bars, review history, and review submission.
+- AI parsing flow for natural-language reviews into structured taste ratings.
+- Fictional seed dataset with 5 cafes, 10 drinks, and baseline taste profiles.
+- Local Docker Compose setup for API + DynamoDB Local.
+- Local kind Kubernetes workflow verified end to end.
 
----
+## Screenshots
 
-## Local Kubernetes
+Screenshots live in [docs/screenshots](docs/screenshots/).
 
-Phase 9 adds local-only Kubernetes manifests for running Matcha Scout in kind for DevOps learning and demos. This is not production Kubernetes and does not use AWS EKS; production still runs on Vercel plus AWS Lambda/API Gateway/DynamoDB.
+| View | Screenshot |
+|---|---|
+| Landing page | [landing-page.jpg](docs/screenshots/landing-page.jpg) |
+| Quiz page | [quiz-page.jpg](docs/screenshots/quiz-page.jpg) |
+| Recommendations | [recommendations-results.jpg](docs/screenshots/recommendations-results.jpg) |
+| Browse drinks | [browse-drinks.jpg](docs/screenshots/browse-drinks.jpg) |
+| Drink detail + review form | [drink-detail-review-form.jpg](docs/screenshots/drink-detail-review-form.jpg) |
 
-See [`docs/local-kubernetes.md`](docs/local-kubernetes.md) for setup, image builds, kind loading, seeding DynamoDB Local, port-forwarding, troubleshooting, and teardown.
-
----
-
-## Running locally
+## Run Locally
 
 ### Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
-- Node.js 20+ installed
 
-### 1. Clone and enter the project
-```bash
-git clone <repo-url>
-cd matcha-scout
-```
+- Docker Desktop
+- Node.js 20+
 
-### 2. Start the backend
+### Backend with Docker Compose
+
 ```bash
-# Copy and configure environment
 cp .env.example .env
-# .env defaults use mock AI mode — no Gemini key needed
-
-# Start API + DynamoDB Local
 docker compose up --build -d
-
-# First-time setup (run once after fresh start)
 docker compose exec api python -m app.seed.create_tables
 docker compose exec api python -m app.seed.seed_data
+curl http://localhost:8000/health
 ```
 
-The API is now running at `http://localhost:8000`.
+The local API runs at `http://localhost:8000`. DynamoDB Local runs inside Docker and resets when the container is recreated.
 
-### 3. Start the frontend
+### Frontend
+
 ```bash
 cd frontend
 cp .env.example .env.local
@@ -94,53 +104,39 @@ npm install
 npm run dev
 ```
 
-Visit: **http://localhost:3000**
+Visit `http://localhost:3000`.
 
-> **Important:** The backend must be running before starting the frontend.
+## Deployment Status
 
----
+- AWS backend: deployed with SAM to Lambda + API Gateway + DynamoDB in `us-west-2`.
+- Vercel frontend: deployed at [matcha-scout.vercel.app](https://matcha-scout.vercel.app).
+- Local Kubernetes: manifests under [k8s/local](k8s/local/) verified with kind. See [docs/local-kubernetes.md](docs/local-kubernetes.md).
 
-## Environment variables
+Cost-safety note: production uses serverless AWS services and does not use EKS, RDS, EC2, NAT Gateway, or other always-on infrastructure.
 
-### Backend (`.env` in repo root)
-```
-AWS_REGION=us-west-2
-DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000
-DYNAMODB_TABLE_NAME=matcha_scout
-AWS_ACCESS_KEY_ID=local
-AWS_SECRET_ACCESS_KEY=local
+## Testing
 
-# Use mock AI parser (no API key needed):
-USE_MOCK_AI=true
+```bash
+# Backend tests
+docker compose exec api pytest tests/ -v
 
-# Or use Gemini Flash:
-USE_MOCK_AI=false
-GEMINI_API_KEY=your_key_here
+# Frontend lint and build
+cd frontend
+npm run lint
+npm run build
 ```
 
-### Frontend (`frontend/.env.local`)
+Production smoke checks:
+
+```bash
+curl -I https://matcha-scout.vercel.app
+curl -I https://matcha-scout.vercel.app/drinks
+curl https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com/health
+curl https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com/drinks
 ```
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-```
 
-For production Vercel, set `NEXT_PUBLIC_API_BASE_URL` to the live AWS API URL shown above.
+## API Overview
 
----
-
-## Frontend pages
-
-| Page | URL | Description |
-|---|---|---|
-| Landing | `/` | Hero, how it works, call to action |
-| Quiz | `/quiz` | Preference sliders → ranked recommendations |
-| Drinks | `/drinks` | Browse all drinks with cafe names |
-| Drink detail | `/drinks/[id]` | Taste profile bars, reviews, submit review |
-
----
-
-## Backend API
-
-### Core endpoints
 ```bash
 GET  /health
 GET  /cafes
@@ -153,90 +149,41 @@ POST /reviews
 GET  /recommendations
 ```
 
-### Recommendation examples
+Example recommendation request:
+
 ```bash
-# Strong, earthy, oat milk, max $8
 curl "http://localhost:8000/recommendations?matcha_strength=5&sweetness=2&creaminess=3&earthiness=5&bitterness=3&price_max=8&milk_type=oat&limit=5"
-
-# Sweet and creamy beginner
-curl "http://localhost:8000/recommendations?matcha_strength=2&sweetness=5&creaminess=5&earthiness=2&bitterness=1&limit=3"
 ```
 
-### Interactive docs
-```
-http://localhost:8000/docs
-```
+## Project Structure
 
----
-
-## Tests
-```bash
-# Backend (runs inside Docker)
-docker compose exec api python -m pytest tests/ -v
-
-# Frontend build verification
-cd frontend && npm run build
-cd frontend && npm run lint
-```
-
----
-
-## Project structure
-
-```
+```text
 matcha-scout/
-├── backend/
-│   ├── app/
-│   │   ├── core/          # Config (settings from env vars)
-│   │   ├── models/        # Pydantic models
-│   │   ├── routers/       # FastAPI routes
-│   │   ├── services/      # DynamoDB client, AI parser, aggregator, ranker
-│   │   └── seed/          # Table creation + seed data
-│   ├── tests/             # 29 pytest unit tests
-│   ├── Dockerfile
-│   └── requirements.txt
-├── frontend/
-│   ├── app/               # Next.js App Router pages
-│   ├── components/        # Shared UI components
-│   ├── lib/               # API client + TypeScript types
-│   └── .env.example
-├── docker-compose.yml
-└── .env.example
+├── backend/              # FastAPI app, routers, models, services, seed scripts, tests
+├── frontend/             # Next.js App Router frontend
+├── infra/aws/            # SAM template for Lambda/API Gateway/DynamoDB
+├── k8s/local/            # Local-only kind Kubernetes manifests
+├── docs/                 # Deployment docs, showcase material, screenshots
+├── scripts/              # Local Kubernetes helper script
+└── docker-compose.yml
 ```
 
----
+## Portfolio Docs
 
-## Development notes
+- [Project showcase](docs/project-showcase.md)
+- [Resume bullets](docs/resume-bullets.md)
+- [Launch copy](docs/launch-copy.md)
+- [Roadmap](docs/roadmap.md)
+- [Local Kubernetes guide](docs/local-kubernetes.md)
 
-- Backend hot-reloads via Docker volume mount — no rebuild needed for code changes
-- Rebuild after `requirements.txt` changes: `docker compose up --build`
-- DynamoDB data is in-memory — re-run `create_tables` + `seed_data` after `docker compose down`
-- Frontend is Next.js 16 App Router — server components fetch data directly, client components handle interactivity only
-- AWS is **not required** for local development — everything runs in Docker and Node
-- Phase 9 is planned for local Kubernetes manifests only, not production Kubernetes
+## Resume Snapshot
 
----
+- Built and deployed an AI-powered recommendation app with Next.js, FastAPI, DynamoDB, AWS Lambda/API Gateway, and Vercel.
+- Implemented Gemini-compatible structured review parsing plus a deterministic ranking engine with explainable match percentages.
+- Added production and local DevOps workflows, including Docker Compose and verified kind Kubernetes manifests.
 
-## Troubleshooting
+## Notes
 
-**Docker not running**
-Start Docker Desktop, then re-run `docker compose up --build -d`.
-
-**Frontend can't connect to backend (drinks page shows error)**
-1. Confirm backend is healthy: `curl http://localhost:8000/health`
-2. Confirm `frontend/.env.local` contains `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000`
-3. Restart `npm run dev` after editing `.env.local`
-
-**Drinks/reviews missing (DynamoDB data wiped)**
-Every `docker compose down` wipes the in-memory DynamoDB. Re-run:
-```bash
-docker compose exec api python -m app.seed.create_tables
-docker compose exec api python -m app.seed.seed_data
-```
-
-**Gemini key missing (`USE_MOCK_AI=false` but no key)**
-The API returns a 500 with: *"Gemini is not configured. Set GEMINI_API_KEY..."*
-Either add your key to `.env`, or set `USE_MOCK_AI=true` for local dev.
-
-**Full QA checklist**
-See [`docs/local-qa-checklist.md`](docs/local-qa-checklist.md) for browser-by-browser testing steps and screenshot guidance.
+- All sample cafe/drink data is fictional.
+- The deployed backend uses mock AI mode by default for safety and cost control.
+- Kubernetes is local-only; production remains Vercel + AWS serverless.
