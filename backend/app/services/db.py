@@ -9,25 +9,28 @@ def get_dynamodb_resource():
     Build a boto3 DynamoDB resource that works in both environments:
 
     Local dev (Docker):
-        DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000
+        DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000  (set in .env)
         AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY set to any non-empty value
         → passes explicit endpoint + credentials to reach DynamoDB Local
 
     AWS Lambda:
         DYNAMODB_ENDPOINT_URL unset (None)
-        AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY unset (None)
-        → boto3 discovers the real DynamoDB endpoint and uses the Lambda IAM role
+        → boto3 uses its credential provider chain, which automatically picks up
+          the Lambda IAM role credentials (including AWS_SESSION_TOKEN).
+          IMPORTANT: never pass AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+          explicitly in Lambda — Lambda temporary credentials require AWS_SESSION_TOKEN
+          too, and passing only partial creds causes UnrecognizedClientException.
     """
     kwargs: dict = {"region_name": settings.aws_region}
 
+    # Local mode only: pass explicit endpoint and credentials for DynamoDB Local.
+    # In Lambda (no endpoint_url), let boto3 use the IAM role via credential chain.
     if settings.dynamodb_endpoint_url:
         kwargs["endpoint_url"] = settings.dynamodb_endpoint_url
-
-    if settings.aws_access_key_id:
-        kwargs["aws_access_key_id"] = settings.aws_access_key_id
-
-    if settings.aws_secret_access_key:
-        kwargs["aws_secret_access_key"] = settings.aws_secret_access_key
+        if settings.aws_access_key_id:
+            kwargs["aws_access_key_id"] = settings.aws_access_key_id
+        if settings.aws_secret_access_key:
+            kwargs["aws_secret_access_key"] = settings.aws_secret_access_key
 
     return boto3.resource("dynamodb", **kwargs)
 

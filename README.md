@@ -15,7 +15,18 @@ An AI-powered matcha discovery and recommendation app. Submit free-text reviews;
 | **3** | Deterministic recommendation/ranking engine with weighted scoring |
 | **4** | Next.js 16 frontend — landing page, preference quiz, drinks browser, drink detail + review form |
 | **5** | Claude Design UI — premium matcha aesthetic, guided quiz, match ring, mobile bottom tab bar |
-| **6** | AWS prep — Lambda/Mangum adapter, SAM template, cost-safety docs (not deployed yet) |
+| **6** | AWS prep — Lambda/Mangum adapter, SAM template, cost-safety docs |
+| **7** | AWS backend deployed — Lambda + DynamoDB + API Gateway live in `us-west-2` |
+
+## Live AWS backend
+
+The backend is deployed to AWS Lambda + API Gateway. The base URL is:
+
+```
+https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com
+```
+
+To use it from the frontend, set `NEXT_PUBLIC_API_BASE_URL` in `frontend/.env.local`.
 
 ## AWS deployment (Phase 6 prep)
 
