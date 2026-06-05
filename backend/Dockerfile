@@ -6,8 +6,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application code, tests, and config
 COPY app/ ./app/
+COPY tests/ ./tests/
+COPY pytest.ini ./
 
 # Expose API port
 EXPOSE 8000

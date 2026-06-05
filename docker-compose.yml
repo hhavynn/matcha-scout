@@ -21,7 +21,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ./backend/app:/app/app   # Hot-reload: local code changes reflect immediately
+      - ./backend/app:/app/app       # Hot-reload: local app code changes reflect immediately
+      - ./backend/tests:/app/tests   # Hot-reload: test changes reflect immediately
     depends_on:
       dynamodb-local:
         condition: service_healthy

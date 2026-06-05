@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import health, cafes, drinks
+from app.routers import health, cafes, drinks, reviews
 
 app = FastAPI(
     title="Matcha Scout API",
@@ -18,3 +18,4 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(cafes.router)
 app.include_router(drinks.router)
+app.include_router(reviews.router)
