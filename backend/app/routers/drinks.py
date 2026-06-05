@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 from app.services import db
 from app.models.drink import Drink
-from app.models.taste_profile import TasteProfile
+from app.models.taste_profile import TasteProfile, compute_confidence
 
 router = APIRouter(prefix="/drinks", tags=["drinks"])
 
@@ -12,17 +12,23 @@ def _item_to_drink(item: dict) -> Drink:
         id=item["drink_id"],
         cafe_id=item["cafe_id"],
         name=item["name"],
-        description=item["description"],
-        price=float(item["price"]),
+        description=item.get("description", ""),
+        price=float(item.get("price", 0)),
         milk_options=item.get("milk_options", []),
         is_iced=item.get("is_iced", False),
         is_hot=item.get("is_hot", False),
         image_url=item.get("image_url"),
         created_at=item["created_at"],
+        source=item.get("source"),
+        verification_status=item.get("verification_status"),
+        submitted_at=item.get("submitted_at"),
+        submitted_by_session=item.get("submitted_by_session"),
     )
 
 
 def _item_to_taste_profile(item: dict) -> TasteProfile:
+    review_count = int(item.get("review_count", 0))
+    conf_label, conf_score = compute_confidence(review_count)
     return TasteProfile(
         drink_id=item["drink_id"],
         matcha_strength=float(item["matcha_strength"]),
@@ -30,8 +36,10 @@ def _item_to_taste_profile(item: dict) -> TasteProfile:
         creaminess=float(item["creaminess"]),
         earthiness=float(item["earthiness"]),
         bitterness=float(item["bitterness"]),
-        review_count=int(item.get("review_count", 0)),
+        review_count=review_count,
         last_updated=item["last_updated"],
+        confidence_label=conf_label,
+        confidence_score=conf_score,
     )
 
 

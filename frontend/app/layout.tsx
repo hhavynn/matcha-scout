@@ -109,7 +109,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 className="text-sm font-medium rounded-full px-3.5 py-2 transition-colors"
                 style={{ color: "#585e4d" }}
               >
-                Browse
+                Drinks
+              </Link>
+              <Link
+                href="/cafes"
+                className="text-sm font-medium rounded-full px-3.5 py-2 transition-colors"
+                style={{ color: "#585e4d" }}
+              >
+                Cafes
               </Link>
             </nav>
 
@@ -150,7 +157,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             style={{ color: "#8c8a78", fontSize: 10.5, fontWeight: 600 }}
           >
             <span className="flex items-center justify-center h-6"><IconGrid size={20} /></span>
-            Browse
+            Drinks
+          </Link>
+          <Link
+            href="/cafes"
+            className="flex-1 flex flex-col items-center gap-1 pt-2 pb-1"
+            style={{ color: "#8c8a78", fontSize: 10.5, fontWeight: 600 }}
+          >
+            <span className="flex items-center justify-center h-6"><IconLeaf size={20} /></span>
+            Cafes
           </Link>
           <Link
             href="/quiz"
