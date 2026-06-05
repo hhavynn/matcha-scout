@@ -57,8 +57,13 @@ Production Kubernetes is intentionally not used. Kubernetes manifests are local-
 
 - Preference quiz across five taste dimensions.
 - Explainable recommendation scoring with match percentages and reasons.
+- Preference quiz across five taste dimensions.
+- Explainable recommendation scoring with match percentages and reasons.
 - Browse page with search, filters, sorting, cafe names, and drink cards.
-- Drink detail page with taste profile bars, review history, and review submission.
+- Cafe directory with Yelp source badges, ratings, and per-cafe drink listings.
+- User-submitted drinks: anonymous users can add exact drinks they tried at a real cafe.
+- Confidence scoring: taste profiles are rated Unrated / Low / Medium / High based on Matcha Scout review count — never Yelp ratings. See [docs/user-submitted-drinks.md](docs/user-submitted-drinks.md).
+- Drink detail page with taste profile bars, confidence badge, review history, and review submission.
 - AI parsing flow for natural-language reviews into structured taste ratings.
 - Local/admin ingestion for real San Diego cafe metadata through the official Yelp Fusion API.
 - Fictional seed dataset with 5 cafes, 10 drinks, and baseline taste profiles.

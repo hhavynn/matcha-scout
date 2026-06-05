@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import TasteBars from "@/components/TasteBars";
 import ReviewForm, { ParsedResultPanel } from "@/components/ReviewForm";
+import ConfidenceBadge from "@/components/ConfidenceBadge";
 import { getTasteProfile, getReviews } from "@/lib/api";
 import { IconBack } from "@/components/Icons";
 import type { Drink, TasteProfile, Review } from "@/lib/types";
@@ -134,17 +135,24 @@ export default function DrinkDetailClient({
               boxShadow: "inset 0 0 0 1px #e8e1d0, var(--shadow-sm)",
             }}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <h2 className="ms-serif" style={{ fontSize: 19, margin: 0, color: "#2a3124" }}>
                 Taste Profile
               </h2>
-              <span style={{ fontSize: 12, color: "#8c8a78" }}>
-                {profile.review_count === 0
-                  ? "Seed data — no reviews yet"
-                  : `${profile.review_count} ${profile.review_count === 1 ? "review" : "reviews"}`}
-              </span>
+              <ConfidenceBadge
+                label={profile.confidence_label}
+                reviewCount={profile.review_count}
+              />
             </div>
             <TasteBars profile={profile} animate />
+            {profile.confidence_label === "unrated" && (
+              <p style={{ fontSize: 12, color: "#aaa794", marginTop: 10, lineHeight: 1.5 }}>
+                Neutral values shown — confidence improves as Matcha Scout reviews come in.
+              </p>
+            )}
+            <p style={{ fontSize: 11.5, color: "#c0bba8", marginTop: 6 }}>
+              Confidence is based on Matcha Scout reviews, not Yelp ratings.
+            </p>
           </div>
         </div>
 

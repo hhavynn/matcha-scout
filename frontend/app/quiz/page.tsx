@@ -5,6 +5,7 @@ import Link from "next/link";
 import PreferenceQuiz from "@/components/PreferenceQuiz";
 import TasteBars from "@/components/TasteBars";
 import MatchRing from "@/components/MatchRing";
+import ConfidenceBadge from "@/components/ConfidenceBadge";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import LoadingState from "@/components/LoadingState";
@@ -247,19 +248,25 @@ function RecCard({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-1.5">
-          {result.milk_options.slice(0, 3).map((m) => (
-            <span key={m} className="ms-pill ms-pill-bare ms-pill-sm">{m}</span>
-          ))}
+      <div className="flex flex-col gap-2.5">
+        <ConfidenceBadge
+          label={result.confidence_label}
+          reviewCount={result.taste_profile.review_count}
+        />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-1.5">
+            {result.milk_options.slice(0, 3).map((m) => (
+              <span key={m} className="ms-pill ms-pill-bare ms-pill-sm">{m}</span>
+            ))}
+          </div>
+          <Link
+            href={`/drinks/${result.drink_id}`}
+            className="ms-btn ms-btn-ghost ms-btn-sm flex items-center gap-1.5"
+            style={{ textDecoration: "none", flexShrink: 0 }}
+          >
+            Details <IconArrow size={13} />
+          </Link>
         </div>
-        <Link
-          href={`/drinks/${result.drink_id}`}
-          className="ms-btn ms-btn-ghost ms-btn-sm flex items-center gap-1.5"
-          style={{ textDecoration: "none", flexShrink: 0 }}
-        >
-          Details <IconArrow size={13} />
-        </Link>
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 import type {
   Cafe,
   Drink,
+  DrinkCreate,
   TasteProfile,
   Review,
+  ExternalReviewExcerpt,
   RecommendationResult,
   RecommendationParams,
 } from "./types";
@@ -70,6 +72,26 @@ export async function submitReview(
     method: "POST",
     body: JSON.stringify({ drink_id: drinkId, raw_text: rawText }),
   });
+}
+
+export async function getCafeDrinks(cafeId: string): Promise<Drink[]> {
+  return apiFetch<Drink[]>(`/cafes/${cafeId}/drinks`);
+}
+
+export async function createDrink(
+  cafeId: string,
+  payload: DrinkCreate
+): Promise<Drink> {
+  return apiFetch<Drink>(`/cafes/${cafeId}/drinks`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getCafeExternalReviews(
+  cafeId: string
+): Promise<ExternalReviewExcerpt[]> {
+  return apiFetch<ExternalReviewExcerpt[]>(`/cafes/${cafeId}/external-reviews`);
 }
 
 export async function getRecommendations(

@@ -16,6 +16,7 @@ Weights reflect how much each dimension typically matters to a matcha drinker:
   bitterness:      0.80  — matters less; people are more tolerant of mismatch
 """
 from app.models.recommendation import RecommendationRequest, RecommendationResult, TasteProfileSnapshot
+from app.models.taste_profile import compute_confidence
 
 MAX_DISTANCE = 4.0
 
@@ -130,13 +131,18 @@ def rank_drinks(
         cafe_id = drink["cafe_id"]
         cafe = cafes_by_id.get(cafe_id, {})
 
+        review_count = int(profile.get("review_count", 0))
+        conf_label, conf_score = compute_confidence(review_count)
+
         taste_snapshot = TasteProfileSnapshot(
             matcha_strength=float(profile["matcha_strength"]),
             sweetness=float(profile["sweetness"]),
             creaminess=float(profile["creaminess"]),
             earthiness=float(profile["earthiness"]),
             bitterness=float(profile["bitterness"]),
-            review_count=int(profile.get("review_count", 0)),
+            review_count=review_count,
+            confidence_label=conf_label,
+            confidence_score=conf_score,
         )
 
         results.append(RecommendationResult(
@@ -150,9 +156,11 @@ def rank_drinks(
             match_score=round(raw_score, 4),
             match_pct=match_pct,
             reasons=_build_reasons(prefs, profile, drink, match_pct),
+            confidence_label=conf_label,
+            confidence_score=conf_score,
         ))
 
-    # Sort by match_pct descending, then by price ascending as tiebreaker
-    results.sort(key=lambda r: (-r.match_pct, r.price))
+    # Primary sort: match_pct desc. Tiebreaker: confidence_score desc, then price asc.
+    results.sort(key=lambda r: (-r.match_pct, -(r.confidence_score or 0.0), r.price))
 
     return results[: prefs.limit]

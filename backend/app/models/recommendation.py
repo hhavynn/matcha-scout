@@ -20,6 +20,8 @@ class TasteProfileSnapshot(BaseModel):
     earthiness: float
     bitterness: float
     review_count: int
+    confidence_label: Optional[str] = None
+    confidence_score: Optional[float] = None
 
 
 class RecommendationResult(BaseModel):
@@ -33,3 +35,5 @@ class RecommendationResult(BaseModel):
     match_score: float
     match_pct: int
     reasons: List[str]
+    confidence_label: Optional[str] = None
+    confidence_score: Optional[float] = None

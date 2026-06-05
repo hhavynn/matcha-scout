@@ -5,6 +5,16 @@ export interface Cafe {
   address?: string;
   website?: string;
   created_at: string;
+  source?: string;
+  external_id?: string;
+  external_url?: string;
+  rating?: number;
+  review_count?: number;
+  image_url?: string;
+  categories?: string[];
+  phone?: string;
+  price?: string;
+  last_ingested_at?: string;
 }
 
 export interface Drink {
@@ -18,6 +28,19 @@ export interface Drink {
   is_hot: boolean;
   image_url?: string;
   created_at: string;
+  source?: string;
+  verification_status?: string;
+  submitted_at?: string;
+  submitted_by_session?: string;
+}
+
+export interface DrinkCreate {
+  name: string;
+  description?: string;
+  price?: number;
+  milk_options?: string[];
+  is_iced?: boolean;
+  is_hot?: boolean;
 }
 
 export interface TasteProfile {
@@ -29,6 +52,8 @@ export interface TasteProfile {
   bitterness: number;
   review_count: number;
   last_updated: string;
+  confidence_label?: string;
+  confidence_score?: number;
 }
 
 export interface Review {
@@ -46,6 +71,18 @@ export interface Review {
   submitted_at: string;
 }
 
+export interface ExternalReviewExcerpt {
+  id: string;
+  cafe_id: string;
+  source: string;
+  excerpt: string;
+  rating?: number;
+  author_name?: string;
+  time_created?: string;
+  external_url?: string;
+  ingested_at: string;
+}
+
 export interface RecommendationResult {
   drink_id: string;
   drink_name: string;
@@ -60,10 +97,14 @@ export interface RecommendationResult {
     earthiness: number;
     bitterness: number;
     review_count: number;
+    confidence_label?: string;
+    confidence_score?: number;
   };
   match_score: number;
   match_pct: number;
   reasons: string[];
+  confidence_label?: string;
+  confidence_score?: number;
 }
 
 export interface RecommendationParams {
