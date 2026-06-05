@@ -1,8 +1,54 @@
 # Phase 7 — Deployment Runbook
 
-> ⚠️ **DO NOT execute these commands until Phase 7.**
-> This document is a planning checklist only. Every command that creates real
-> AWS resources is clearly marked.
+> ✅ **Phase 7 is COMPLETE.** The AWS backend is deployed and live.
+> This document is preserved as a record of what was done and as a reference for Phase 8.
+
+## Deployment record
+
+| | |
+|---|---|
+| **Stack name** | `matcha-scout-api` |
+| **Region** | `us-west-2` |
+| **API Gateway URL** | `https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com` |
+| **DynamoDB table** | `matcha_scout_prod` |
+| **Lambda function** | `matcha-scout-api-prod` |
+| **Architecture** | arm64 (Graviton2) |
+| **AI mode** | `USE_MOCK_AI=true` (mock parser) |
+| **Seeded** | Yes — 5 cafes, 10 drinks, 10 taste profiles |
+
+## Smoke test results (all passed)
+
+```
+GET  /health          → {"status":"ok","service":"matcha-scout-api"}
+GET  /cafes           → 5 cafes
+GET  /drinks          → 10 drinks
+GET  /drinks/drink-001/taste-profile → taste profile object
+GET  /recommendations → ranked results
+POST /reviews         → review saved with mock-parsed taste fields
+```
+
+## Bugs fixed during deployment
+
+1. **SAM artifact caching** — `--force-upload` + direct `aws lambda update-function-code` required because SAM reused old S3 artifact even after a clean rebuild
+2. **`ReservedConcurrentExecutions: 10` rejected** — new AWS accounts have a 10-concurrency limit leaving no room for a reservation; removed from template
+3. **API Gateway stage prefix** — HTTP API v2 with named stage `prod` passes `/prod/path` as `rawPath` to Lambda; fixed by switching to `$default` stage (no prefix in paths)
+4. **`UnrecognizedClientException`** — Lambda sets `AWS_SESSION_TOKEN` alongside `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`; passing only partial temp credentials to boto3 fails auth; fixed by only passing explicit credentials in local mode (when `DYNAMODB_ENDPOINT_URL` is set)
+
+## Phase 8 — Connect frontend
+
+The next phase is to connect the deployed frontend to the live backend.
+
+Set `NEXT_PUBLIC_API_BASE_URL` in the frontend (Vercel environment variables or `.env.local`):
+
+```
+NEXT_PUBLIC_API_BASE_URL=https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com
+```
+
+Then deploy the frontend to Vercel and add the Vercel URL to the CORS whitelist in `infra/aws/template.yaml`.
+
+---
+
+## Original planning commands (for reference)
 
 ---
 
