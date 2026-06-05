@@ -14,6 +14,17 @@ An AI-powered matcha discovery and recommendation app. Submit free-text reviews;
 | **2** | AI review parsing with Gemini Flash + mock parser + taste profile aggregation |
 | **3** | Deterministic recommendation/ranking engine with weighted scoring |
 | **4** | Next.js 16 frontend — landing page, preference quiz, drinks browser, drink detail + review form |
+| **5** | Claude Design UI — premium matcha aesthetic, guided quiz, match ring, mobile bottom tab bar |
+| **6** | AWS prep — Lambda/Mangum adapter, SAM template, cost-safety docs (not deployed yet) |
+
+## AWS deployment (Phase 6 prep)
+
+The backend is ready for Lambda but **has not been deployed yet**. Local development is unchanged.
+
+- Lambda handler: `backend/app/lambda_handler.py` (Mangum ASGI adapter)
+- SAM template: `infra/aws/template.yaml` (Lambda + DynamoDB + API Gateway HTTP API)
+- Setup guide: [`docs/aws-deployment-prep.md`](docs/aws-deployment-prep.md)
+- Deployment runbook: [`docs/phase-7-deployment-runbook.md`](docs/phase-7-deployment-runbook.md)
 
 ---
 

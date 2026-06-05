@@ -1,0 +1,163 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Matcha Scout — SAM infrastructure template
+#
+# Deploys:
+#   - DynamoDB table (on-demand billing, single-table design with GSI)
+#   - Lambda function running the FastAPI app via Mangum
+#   - API Gateway HTTP API (v2) in front of Lambda
+#
+# Cost-safety notes:
+#   - DynamoDB BillingMode: PAY_PER_REQUEST  → $0 until you get real traffic
+#   - Lambda ReservedConcurrentExecutions: 10 → caps runaway loops
+#   - API Gateway HTTP API is ~3.5x cheaper than REST API
+#   - No VPC, no NAT Gateway, no always-on EC2
+# ─────────────────────────────────────────────────────────────────────────────
+
+Description: Matcha Scout serverless backend (FastAPI + Lambda + DynamoDB)
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues: [prod, staging]
+    Description: Deployment environment name
+
+  TableName:
+    Type: String
+    Default: matcha_scout
+    Description: DynamoDB table name
+
+  UseMockAI:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Use keyword-based mock parser instead of Gemini API
+
+  GeminiApiKey:
+    Type: String
+    Default: ""
+    NoEcho: true   # Never printed in CloudFormation console or logs
+    Description: >
+      Gemini Flash API key for AI review parsing.
+      Leave blank when UseMockAI=true.
+      For production, prefer AWS Secrets Manager over this parameter.
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30          # seconds — plenty for DynamoDB + Gemini; Lambda max is 900
+    MemorySize: 512      # MB — adequate for FastAPI + boto3
+    Environment:
+      Variables:
+        AWS_REGION_NAME: !Ref AWS::Region
+        DYNAMODB_TABLE_NAME: !Ref TableName
+        # DYNAMODB_ENDPOINT_URL is intentionally absent — Lambda uses real DynamoDB
+        USE_MOCK_AI: !Ref UseMockAI
+        GEMINI_API_KEY: !Ref GeminiApiKey
+        AI_PROVIDER: gemini
+
+Resources:
+
+  # ── DynamoDB table ─────────────────────────────────────────────────────────
+  MatchaScoutTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain   # Protect data from accidental stack deletion
+    Properties:
+      TableName: !Ref TableName
+      BillingMode: PAY_PER_REQUEST   # On-demand — no provisioned cost
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false   # Enable in production if data matters
+      Tags:
+        - Key: Project
+          Value: matcha-scout
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ── Lambda function ────────────────────────────────────────────────────────
+  MatchaScoutApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "matcha-scout-api-${Environment}"
+      Description: Matcha Scout FastAPI backend (Mangum ASGI adapter)
+      CodeUri: ../../backend/   # Path relative to template.yaml
+      Handler: app.lambda_handler.handler
+      ReservedConcurrentExecutions: 10   # Cost guard: cap concurrent invocations
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
+      Events:
+        ApiGatewayProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MatchaScoutHttpApi
+            Path: /{proxy+}
+            Method: ANY
+        ApiGatewayRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MatchaScoutHttpApi
+            Path: /
+            Method: ANY
+
+  # ── API Gateway HTTP API ───────────────────────────────────────────────────
+  MatchaScoutHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Environment
+      Description: Matcha Scout API Gateway HTTP API
+      CorsConfiguration:
+        AllowOrigins:
+          - "http://localhost:3000"
+          - "http://127.0.0.1:3000"
+          # Add your Vercel/production frontend URL here when known:
+          # - "https://your-app.vercel.app"
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+        MaxAge: 600
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway base URL — use as NEXT_PUBLIC_API_BASE_URL in frontend
+    Value: !Sub "https://${MatchaScoutHttpApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
+
+  TableName:
+    Description: DynamoDB table name
+    Value: !Ref MatchaScoutTable
+
+  LambdaFunctionName:
+    Description: Lambda function name
+    Value: !Ref MatchaScoutApi
+
+  LambdaFunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt MatchaScoutApi.Arn
