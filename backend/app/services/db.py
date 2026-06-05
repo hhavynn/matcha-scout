@@ -108,3 +108,65 @@ def get_all_cafes_by_id() -> dict[str, dict]:
     """Return a dict of cafe_id → cafe metadata item."""
     cafe_items = scan_by_entity_type("CAFE")
     return {item["cafe_id"]: item for item in cafe_items}
+
+
+def get_cafe_by_external_source(source: str, external_id: str) -> dict | None:
+    """Find a cafe by external source/id.
+
+    This scan is acceptable for the local/admin ingestion MVP. At larger scale,
+    source + external_id should be indexed with a dedicated GSI.
+    """
+    table = get_table()
+    response = table.scan(
+        FilterExpression=(
+            Attr("PK").begins_with("CAFE#")
+            & Attr("SK").eq("METADATA")
+            & Attr("source").eq(source)
+            & Attr("external_id").eq(external_id)
+        )
+    )
+    items = response.get("Items", [])
+    return items[0] if items else None
+
+
+def upsert_cafe_from_external_source(cafe: dict, no_overwrite: bool = False) -> dict:
+    """Create/update a cafe metadata item from an external source.
+
+    External metadata is allowed to refresh, but Matcha Scout user-owned records
+    such as reviews and drink taste profiles are never touched here.
+    """
+    existing = get_cafe_by_external_source(cafe["source"], cafe["external_id"])
+    item = dict(existing or {})
+
+    user_owned_fields = {"name", "location", "address", "website", "created_at"}
+    for key, value in cafe.items():
+        if value is None:
+            continue
+        if no_overwrite and existing and key in user_owned_fields and item.get(key):
+            continue
+        item[key] = value
+
+    item["PK"] = f"CAFE#{item['cafe_id']}"
+    item["SK"] = "METADATA"
+    get_table().put_item(Item=item)
+    return item
+
+
+def put_external_review_excerpt(cafe_id: str, excerpt: dict) -> None:
+    """Store a Yelp review excerpt separately from Matcha Scout user reviews."""
+    item = {
+        **excerpt,
+        "PK": f"CAFE#{cafe_id}",
+        "SK": f"EXTERNAL_REVIEW#YELP#{excerpt['external_review_id']}",
+        "cafe_id": cafe_id,
+    }
+    get_table().put_item(Item=item)
+
+
+def list_external_review_excerpts(cafe_id: str) -> list[dict]:
+    items = query_by_pk(f"CAFE#{cafe_id}")
+    return sorted(
+        [item for item in items if item.get("SK", "").startswith("EXTERNAL_REVIEW#")],
+        key=lambda item: item.get("time_created") or item.get("ingested_at") or "",
+        reverse=True,
+    )

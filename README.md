@@ -60,6 +60,7 @@ Production Kubernetes is intentionally not used. Kubernetes manifests are local-
 - Browse page with search, filters, sorting, cafe names, and drink cards.
 - Drink detail page with taste profile bars, review history, and review submission.
 - AI parsing flow for natural-language reviews into structured taste ratings.
+- Local/admin ingestion for real San Diego cafe metadata through the official Yelp Fusion API.
 - Fictional seed dataset with 5 cafes, 10 drinks, and baseline taste profiles.
 - Local Docker Compose setup for API + DynamoDB Local.
 - Local kind Kubernetes workflow verified end to end.
@@ -111,6 +112,7 @@ Visit `http://localhost:3000`.
 - AWS backend: deployed with SAM to Lambda + API Gateway + DynamoDB in `us-west-2`.
 - Vercel frontend: deployed at [matcha-scout.vercel.app](https://matcha-scout.vercel.app).
 - Local Kubernetes: manifests under [k8s/local](k8s/local/) verified with kind. See [docs/local-kubernetes.md](docs/local-kubernetes.md).
+- Yelp ingestion: official Yelp Fusion API only, local/admin script only. See [docs/yelp-ingestion.md](docs/yelp-ingestion.md).
 
 Cost-safety note: production uses serverless AWS services and does not use EKS, RDS, EC2, NAT Gateway, or other always-on infrastructure.
 
@@ -174,6 +176,7 @@ matcha-scout/
 - [Resume bullets](docs/resume-bullets.md)
 - [Launch copy](docs/launch-copy.md)
 - [Roadmap](docs/roadmap.md)
+- [Yelp ingestion guide](docs/yelp-ingestion.md)
 - [Local Kubernetes guide](docs/local-kubernetes.md)
 
 ## Resume Snapshot
@@ -187,3 +190,4 @@ matcha-scout/
 - All sample cafe/drink data is fictional.
 - The deployed backend uses mock AI mode by default for safety and cost control.
 - Kubernetes is local-only; production remains Vercel + AWS serverless.
+- Yelp data is external cafe metadata/excerpts only; it is not stored as Matcha Scout user reviews.
