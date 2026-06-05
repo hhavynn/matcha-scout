@@ -23,6 +23,7 @@ services:
     volumes:
       - ./backend/app:/app/app       # Hot-reload: local app code changes reflect immediately
       - ./backend/tests:/app/tests   # Hot-reload: test changes reflect immediately
+      - ./data:/app/data:ro          # Curation JSON files (read-only inside container)
     depends_on:
       dynamodb-local:
         condition: service_healthy

@@ -78,6 +78,7 @@ Production Kubernetes is intentionally not used. Kubernetes manifests are local-
 - Drink detail page with taste profile bars, confidence badge, review history, and review submission.
 - AI parsing flow for natural-language reviews into structured taste ratings.
 - Local/admin ingestion for real San Diego cafe metadata through the official Yelp Fusion API.
+- Manual drink curation workflow: `data/curation/` JSON files + `python -m app.ingest.manual_drink_curation` for admin-verified drinks. See [docs/manual-drink-curation.md](docs/manual-drink-curation.md).
 - Fictional seed dataset with 5 cafes, 10 drinks, and baseline taste profiles.
 - Local Docker Compose setup for API + DynamoDB Local.
 - Local kind Kubernetes workflow verified end to end.

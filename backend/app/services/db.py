@@ -170,3 +170,62 @@ def list_external_review_excerpts(cafe_id: str) -> list[dict]:
         key=lambda item: item.get("time_created") or item.get("ingested_at") or "",
         reverse=True,
     )
+
+
+# ── Manual curation helpers ───────────────────────────────────────────────────
+
+def find_cafe_by_external_id(source: str, external_id: str) -> dict | None:
+    """Alias for get_cafe_by_external_source — used by manual curation script."""
+    return get_cafe_by_external_source(source, external_id)
+
+
+def find_existing_drink_for_cafe(cafe_id: str, drink_name: str) -> dict | None:
+    """Return the first drink under a cafe whose name matches (case-insensitive).
+
+    Uses a GSI query + in-memory filter. A secondary GSI on drink name would be
+    more efficient at scale, but is unnecessary for the admin-curation workflow.
+    """
+    items = query_gsi(gsi_pk_value=f"CAFE#{cafe_id}")
+    name_lower = drink_name.strip().lower()
+    for item in items:
+        if item.get("SK") == "METADATA" and item.get("name", "").lower() == name_lower:
+            return item
+    return None
+
+
+def create_admin_curated_drink(cafe_id: str, drink: dict) -> dict:
+    """Persist an admin-curated drink and initialize its neutral taste profile.
+
+    The caller is responsible for setting source, verification_status, and all
+    required fields. This helper only writes the two DynamoDB items and returns
+    the stored drink item.
+    """
+    from decimal import Decimal
+
+    drink_id = drink["drink_id"]
+
+    drink_item = {
+        **drink,
+        "PK": f"DRINK#{drink_id}",
+        "SK": "METADATA",
+        "GSI1PK": f"CAFE#{cafe_id}",
+        "GSI1SK": f"DRINK#{drink_id}",
+    }
+    put_item(drink_item)
+
+    # Neutral taste profile — review_count 0 means "unrated" confidence.
+    # Real taste data only comes from Matcha Scout user reviews.
+    put_item({
+        "PK": f"DRINK#{drink_id}",
+        "SK": "TASTE_PROFILE",
+        "drink_id": drink_id,
+        "matcha_strength": Decimal("3.0"),
+        "sweetness": Decimal("3.0"),
+        "creaminess": Decimal("3.0"),
+        "earthiness": Decimal("3.0"),
+        "bitterness": Decimal("3.0"),
+        "review_count": 0,
+        "last_updated": drink.get("created_at", ""),
+    })
+
+    return drink_item

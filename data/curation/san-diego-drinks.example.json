@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "source_note": "Manual curation file. Only add drinks personally verified from official menus, cafe visits, or user submissions. Do not include guessed or scraped data.",
+  "drinks": [
+    {
+      "_comment": "EXAMPLE ONLY — replace with real Yelp ID from local ingestion and verified menu data.",
+      "cafe_external_source": "yelp",
+      "cafe_external_id": "example-yelp-business-id",
+      "cafe_name_hint": "Example Cafe Name (informational, not used for matching)",
+      "name": "Iced Matcha Latte",
+      "description": "Example only — replace with a verified menu description or leave null.",
+      "price": null,
+      "milk_options": ["whole", "oat", "almond"],
+      "is_iced": true,
+      "is_hot": true,
+      "verification_status": "admin_curated",
+      "curation_notes": "Example entry. Do not treat as real data. Verified from: [source e.g. cafe website, personal visit, official menu]."
+    },
+    {
+      "_comment": "EXAMPLE using direct cafe_id instead of Yelp external ID.",
+      "cafe_id": "cafe-001",
+      "cafe_name_hint": "Verdant Cup (seed data example)",
+      "name": "Ceremonial Grade Hot Matcha",
+      "description": "Example only — a simple hot ceremonial matcha.",
+      "price": 6.50,
+      "milk_options": ["none"],
+      "is_iced": false,
+      "is_hot": true,
+      "verification_status": "admin_curated",
+      "curation_notes": "Example using direct cafe_id. Replace with real verified data."
+    }
+  ]
+}

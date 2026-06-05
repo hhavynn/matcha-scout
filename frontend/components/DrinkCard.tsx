@@ -95,6 +95,12 @@ export default function DrinkCard({ drink, cafeName }: Props) {
             )}
             {drink.is_iced && <span className="ms-pill ms-pill-bare ms-pill-sm">iced</span>}
             {drink.is_hot && <span className="ms-pill ms-pill-warm ms-pill-sm">hot</span>}
+            {drink.source === "admin_curated" && (
+              <span className="ms-pill ms-pill-sm" style={{ fontSize: 10, opacity: 0.75 }}>curated</span>
+            )}
+            {drink.source === "user_submitted" && (
+              <span className="ms-pill ms-pill-bare ms-pill-sm" style={{ fontSize: 10, opacity: 0.75 }}>community</span>
+            )}
           </div>
         </div>
       </div>
