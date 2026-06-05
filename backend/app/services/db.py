@@ -54,3 +54,36 @@ def scan_by_entity_type(entity_type: str) -> list[dict]:
 def put_item(item: dict) -> None:
     table = get_table()
     table.put_item(Item=item)
+
+
+def scan_by_sk(sk_value: str) -> list[dict]:
+    """Scan for all items with a specific SK value — used to fetch all taste profiles."""
+    table = get_table()
+    response = table.scan(
+        FilterExpression=Attr("SK").eq(sk_value),
+    )
+    return response.get("Items", [])
+
+
+def get_all_drinks_with_profiles() -> list[dict]:
+    """Return a list of dicts each merging a drink METADATA item with its TASTE_PROFILE.
+    Drinks without a taste profile are excluded (no data to rank against)."""
+    drink_items = scan_by_entity_type("DRINK")
+    profile_items = scan_by_sk("TASTE_PROFILE")
+
+    # Index profiles by drink_id for O(1) lookup
+    profiles_by_drink_id = {item["drink_id"]: item for item in profile_items}
+
+    result = []
+    for drink in drink_items:
+        drink_id = drink["drink_id"]
+        profile = profiles_by_drink_id.get(drink_id)
+        if profile:
+            result.append({**drink, "profile": profile})
+    return result
+
+
+def get_all_cafes_by_id() -> dict[str, dict]:
+    """Return a dict of cafe_id → cafe metadata item."""
+    cafe_items = scan_by_entity_type("CAFE")
+    return {item["cafe_id"]: item for item in cafe_items}

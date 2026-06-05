@@ -14,6 +14,15 @@ An AI-powered matcha discovery app that helps you find matcha drinks based on yo
 - Fictional seed data: 5 cafes, 10 drinks, 10 taste profiles
 - Hot-reloading dev server via Docker Compose volume mount
 
+## Phase 3 — Recommendation Engine
+
+Matcha Scout ranks drinks against your taste preferences using a deterministic weighted scoring formula. Each dimension (matcha strength, sweetness, creaminess, earthiness, bitterness) is scored by similarity: `1 - abs(drink_value - preference_value) / 4`, then combined using fixed weights that reflect how much each dimension typically matters to a matcha drinker. Results are filtered by price and milk type before ranking, and each result includes a `match_pct` and human-readable reasons explaining the match.
+
+- `GET /recommendations` — ranked drink list with match scores and reasons
+- Supports filtering by `price_max` and `milk_type`
+- Returns empty list (not an error) when no drinks pass filters
+- 19 additional pytest unit tests covering scoring math, filters, and reason generation
+
 ## Phase 2 — AI Review Parsing
 
 - `POST /reviews` — submit a free-text matcha review
@@ -130,6 +139,28 @@ curl -X POST http://localhost:8000/reviews \
 curl http://localhost:8000/drinks/drink-001/reviews
 ```
 
+### Get drink recommendations
+
+**Strong, earthy, low-sweetness user — max $8, oat milk:**
+```bash
+curl "http://localhost:8000/recommendations?matcha_strength=5&sweetness=2&creaminess=3&earthiness=5&bitterness=3&price_max=8&milk_type=oat&limit=5"
+```
+
+**Sweet, creamy beginner-friendly user:**
+```bash
+curl "http://localhost:8000/recommendations?matcha_strength=2&sweetness=5&creaminess=5&earthiness=2&bitterness=1&limit=3"
+```
+
+**Price-limited (under $6):**
+```bash
+curl "http://localhost:8000/recommendations?matcha_strength=3&sweetness=3&creaminess=3&earthiness=3&bitterness=3&price_max=6"
+```
+
+**Oat milk filter only:**
+```bash
+curl "http://localhost:8000/recommendations?matcha_strength=3&sweetness=3&creaminess=3&earthiness=3&bitterness=3&milk_type=oat"
+```
+
 ### Interactive API docs
 ```
 http://localhost:8000/docs
@@ -145,8 +176,8 @@ matcha-scout/
 │   ├── app/
 │   │   ├── core/          # Config and settings
 │   │   ├── models/        # Pydantic data models
-│   │   ├── routers/       # FastAPI route handlers (health, cafes, drinks, reviews)
-│   │   ├── services/      # DynamoDB client, AI parser, taste profile aggregator
+│   │   ├── routers/       # FastAPI route handlers (health, cafes, drinks, reviews, recommendations)
+│   │   ├── services/      # DynamoDB client, AI parser, taste profile aggregator, ranker
 │   │   ├── seed/          # Table creation and sample data scripts
 │   │   └── main.py        # FastAPI app entry point
 │   ├── tests/             # Pytest tests (mock parser, aggregation logic)
