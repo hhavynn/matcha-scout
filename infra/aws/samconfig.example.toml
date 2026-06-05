@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Matcha Scout — SAM CLI configuration example
+#
+# USAGE:
+#   1. Copy this file: cp samconfig.example.toml samconfig.toml
+#   2. Fill in your real values in samconfig.toml
+#   3. samconfig.toml is gitignored — never commit real values
+#
+# NOTE: samconfig.toml is only needed for Phase 7 deployment.
+#       Do NOT run `sam deploy` during Phase 6.
+# ─────────────────────────────────────────────────────────────────────────────
+
+version = 0.1
+
+[default.deploy.parameters]
+stack_name        = "matcha-scout-prod"
+s3_bucket         = "your-sam-artifacts-bucket-name"   # S3 bucket SAM uses for Lambda code
+s3_prefix         = "matcha-scout"
+region            = "us-east-1"                        # Match AWS_REGION
+confirm_changeset = true
+capabilities      = "CAPABILITY_IAM"
+# resolve_s3      = true   # Uncomment to let SAM create the S3 bucket for you
+
+parameter_overrides = [
+  "Environment=prod",
+  "TableName=matcha_scout",
+  "UseMockAI=false",
+  "GeminiApiKey=YOUR_GEMINI_KEY_HERE",  # Replace or use SSM: "GeminiApiKey=/matcha-scout/gemini-key"
+]
+
+[default.build.parameters]
+use_container = false   # Set true to build inside a Docker container (matches Lambda runtime)

@@ -23,6 +23,10 @@ Thumbs.db
 *.zip
 docs/design/matcha-scout/.thumbnail
 
+# AWS SAM (real config contains secrets/bucket names — never commit)
+infra/aws/samconfig.toml
+.aws-sam/
+
 # IDE
 .vscode/
 .idea/

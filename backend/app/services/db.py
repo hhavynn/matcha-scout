@@ -5,13 +5,31 @@ from app.core.config import settings
 
 
 def get_dynamodb_resource():
-    return boto3.resource(
-        "dynamodb",
-        region_name=settings.aws_region,
-        endpoint_url=settings.dynamodb_endpoint_url,
-        aws_access_key_id=settings.aws_access_key_id,
-        aws_secret_access_key=settings.aws_secret_access_key,
-    )
+    """
+    Build a boto3 DynamoDB resource that works in both environments:
+
+    Local dev (Docker):
+        DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000
+        AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY set to any non-empty value
+        → passes explicit endpoint + credentials to reach DynamoDB Local
+
+    AWS Lambda:
+        DYNAMODB_ENDPOINT_URL unset (None)
+        AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY unset (None)
+        → boto3 discovers the real DynamoDB endpoint and uses the Lambda IAM role
+    """
+    kwargs: dict = {"region_name": settings.aws_region}
+
+    if settings.dynamodb_endpoint_url:
+        kwargs["endpoint_url"] = settings.dynamodb_endpoint_url
+
+    if settings.aws_access_key_id:
+        kwargs["aws_access_key_id"] = settings.aws_access_key_id
+
+    if settings.aws_secret_access_key:
+        kwargs["aws_secret_access_key"] = settings.aws_secret_access_key
+
+    return boto3.resource("dynamodb", **kwargs)
 
 
 def get_table():

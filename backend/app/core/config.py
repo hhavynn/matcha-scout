@@ -1,12 +1,22 @@
 import os
+from typing import Optional
 
 
 class Settings:
     aws_region: str = os.getenv("AWS_REGION", "us-east-1")
-    dynamodb_endpoint_url: str = os.getenv("DYNAMODB_ENDPOINT_URL", "http://dynamodb-local:8000")
+
+    # DynamoDB endpoint:
+    #   Local dev  → set DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000 in .env
+    #   AWS Lambda → leave DYNAMODB_ENDPOINT_URL unset; boto3 uses the real AWS endpoint
+    dynamodb_endpoint_url: Optional[str] = os.getenv("DYNAMODB_ENDPOINT_URL") or None
+
     dynamodb_table_name: str = os.getenv("DYNAMODB_TABLE_NAME", "matcha_scout")
-    aws_access_key_id: str = os.getenv("AWS_ACCESS_KEY_ID", "local")
-    aws_secret_access_key: str = os.getenv("AWS_SECRET_ACCESS_KEY", "local")
+
+    # Explicit credentials:
+    #   Local dev  → set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY to any non-empty value
+    #   AWS Lambda → leave unset; boto3 discovers IAM role credentials automatically
+    aws_access_key_id: Optional[str] = os.getenv("AWS_ACCESS_KEY_ID") or None
+    aws_secret_access_key: Optional[str] = os.getenv("AWS_SECRET_ACCESS_KEY") or None
 
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
     ai_provider: str = os.getenv("AI_PROVIDER", "gemini")
