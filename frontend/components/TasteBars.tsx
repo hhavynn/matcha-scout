@@ -1,9 +1,9 @@
 const DIMENSIONS = [
-  { key: "matcha_strength", label: "Matcha Strength", color: "bg-green-600" },
-  { key: "sweetness",       label: "Sweetness",       color: "bg-yellow-400" },
-  { key: "creaminess",      label: "Creaminess",      color: "bg-orange-300" },
-  { key: "earthiness",      label: "Earthiness",      color: "bg-lime-600"   },
-  { key: "bitterness",      label: "Bitterness",      color: "bg-emerald-800"},
+  { key: "matcha_strength", label: "Strength" },
+  { key: "sweetness",       label: "Sweetness" },
+  { key: "creaminess",      label: "Creaminess" },
+  { key: "earthiness",      label: "Earthiness" },
+  { key: "bitterness",      label: "Bitterness" },
 ] as const;
 
 type ProfileLike = {
@@ -14,22 +14,50 @@ type ProfileLike = {
   bitterness: number;
 };
 
-export default function TasteBars({ profile }: { profile: ProfileLike }) {
+interface Props {
+  profile: ProfileLike;
+  /** When provided, shows a hojicha vertical marker at the user's preference value */
+  compareTo?: ProfileLike;
+  animate?: boolean;
+}
+
+export default function TasteBars({ profile, compareTo, animate = false }: Props) {
   return (
-    <div className="space-y-2">
-      {DIMENSIONS.map(({ key, label, color }) => {
+    <div className="flex flex-col" style={{ gap: 10 }}>
+      {DIMENSIONS.map(({ key, label }, i) => {
         const value = profile[key];
         const pct = ((value - 1) / 4) * 100;
+        const comparePct = compareTo ? ((compareTo[key] - 1) / 4) * 100 : null;
+
         return (
-          <div key={key} className="flex items-center gap-3">
-            <span className="text-xs text-gray-500 w-28 shrink-0 text-right">{label}</span>
-            <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+          <div key={key} className="ms-taste-row">
+            <span className="ms-taste-label">{label}</span>
+            <div className="ms-taste-track" style={{ overflow: "visible" }}>
               <div
-                className={`${color} h-full rounded-full transition-all`}
-                style={{ width: `${pct}%` }}
+                className="ms-taste-fill"
+                style={{
+                  width: `${pct}%`,
+                  transition: animate ? `width .7s cubic-bezier(.2,.8,.2,1) ${i * 70}ms` : "none",
+                }}
               />
+              {/* Hojicha "your target" marker */}
+              {comparePct !== null && (
+                <div
+                  title="your preference"
+                  style={{
+                    position: "absolute",
+                    top: -3, bottom: -3,
+                    left: `calc(${comparePct}% - 1px)`,
+                    width: 2,
+                    background: "#a9774e",
+                    borderRadius: 2,
+                    opacity: 0.85,
+                    zIndex: 3,
+                  }}
+                />
+              )}
             </div>
-            <span className="text-xs text-gray-500 w-4 shrink-0">{value}</span>
+            <span className="ms-taste-val">{value}</span>
           </div>
         );
       })}

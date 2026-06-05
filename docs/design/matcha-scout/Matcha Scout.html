@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Matcha Scout — Prototype</title>
+<link rel="stylesheet" href="styles/matcha.css" />
+<link rel="stylesheet" href="styles/app.css" />
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #efe9da 0%, transparent 60%),
+      #e7e1d3;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    min-height: 100%;
+  }
+  .stage { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 22px 16px 60px; box-sizing: border-box; }
+  .stage-bar {
+    width: 100%; max-width: 1180px; display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 22px;
+  }
+  .stage-bar .sb-title { display: flex; align-items: center; gap: 11px; }
+  .stage-bar .sb-title .t { font-family: 'Newsreader', serif; font-size: 19px; color: #2a3124; letter-spacing: -0.01em; }
+  .stage-bar .sb-hint { font-size: 12.5px; color: #837c6c; }
+  .frame-wrap { display: flex; justify-content: center; width: 100%; }
+  @media (max-width: 760px) { .stage-bar .sb-hint { display: none; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#e7e1d3"/>
+    <circle cx="50" cy="50" r="26" fill="none" stroke="#5f7850" stroke-width="3" opacity="0.5"/>
+    <circle cx="50" cy="50" r="17" fill="#5f7850"/>
+    <circle cx="44" cy="44" r="5.5" fill="#fffdf8" opacity="0.42"/>
+  </svg>
+</template>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- data + engine -->
+<script src="data/drinks.js"></script>
+<script src="app/engine.js"></script>
+<!-- frames -->
+<script type="text/babel" src="frames/ios-frame.jsx"></script>
+<script type="text/babel" src="frames/browser-window.jsx"></script>
+<!-- components -->
+<script type="text/babel" src="app/primitives.jsx"></script>
+<script type="text/babel" src="app/screens-a.jsx"></script>
+<script type="text/babel" src="app/screens-b.jsx"></script>
+<script type="text/babel" src="app/screens-c.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+/* hooks (useState/useEffect/useRef) declared globally in primitives.jsx */
+const DEFAULT_PREFS = { strength: 3, sweet: 3, creamy: 3, earthy: 3, bitter: 3 };
+
+function Footer() {
+  return (
+    <footer style={{ position: 'relative', zIndex: 1, borderTop: '1px solid var(--line)', marginTop: 32, padding: '22px 18px 30px', textAlign: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10, opacity: 0.8 }}><Logo size={20} /></div>
+      <p style={{ margin: 0, fontSize: 11.5, color: 'var(--ink-4)', lineHeight: 1.6 }}>
+        Sample data only — all cafes and drinks are fictional.<br/>Made with calm, by the community.
+      </p>
+    </footer>
+  );
+}
+
+function AppBody({ route, go, mobile }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let s = el.parentElement;
+    while (s && s !== document.body) {
+      const oy = getComputedStyle(s).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && s.scrollHeight > s.clientHeight) { s.scrollTop = 0; return; }
+      s = s.parentElement;
+    }
+  }, [route.page, route.drinkId, route.stamp]);
+
+  let screen;
+  switch (route.page) {
+    case 'browse':  screen = <Browse go={go} />; break;
+    case 'quiz':    screen = <Quiz go={go} initial={route.initial} />; break;
+    case 'results': screen = <Results go={go} prefs={route.prefs || DEFAULT_PREFS} />; break;
+    case 'drink':   screen = <Detail go={go} drinkId={route.drinkId} />; break;
+    default:        screen = <Landing go={go} />;
+  }
+  return (
+    <div ref={ref} className={'ms ms-app' + (mobile ? ' is-mobile' : '')}>
+      <div className="ms-app-body">
+        <Header page={route.page} go={go} />
+        {screen}
+        <Footer />
+      </div>
+      {mobile && <BottomNav page={route.page} go={go} />}
+    </div>
+  );
+}
+
+function App() {
+  const [view, setView] = useState('mobile');
+  const [route, setRoute] = useState({ page: 'home', stamp: 0 });
+  const go = (page, params = {}) => setRoute((r) => ({ page, stamp: r.stamp + 1, ...params }));
+  const body = <AppBody route={route} go={go} mobile={view === 'mobile'} />;
+
+  return (
+    <div className="stage">
+      <div className="stage-bar">
+        <div className="sb-title">
+          <Logo size={22} />
+          <span className="sb-hint" style={{ marginLeft: 6 }}>Interactive prototype</span>
+        </div>
+        <Segmented
+          options={[{ value: 'mobile', label: '☻ Mobile' }, { value: 'desktop', label: '▤ Desktop' }]}
+          value={view} onChange={setView} />
+      </div>
+      <div className="frame-wrap">
+        {view === 'mobile' ? (
+          <IOSDevice width={400} height={858}>{body}</IOSDevice>
+        ) : (
+          <ChromeWindow width={Math.min(1180, (typeof window !== 'undefined' ? window.innerWidth : 1180) - 40)} height={772} url="matchascout.app" tabs={[{ title: 'Matcha Scout' }]}>
+            {body}
+          </ChromeWindow>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

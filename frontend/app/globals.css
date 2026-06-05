@@ -1,24 +1,295 @@
+/* ── Google Fonts (must come before all other rules) ───────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
 @import "tailwindcss";
 
+/* ── Design Tokens ─────────────────────────────────────────────────────── */
 @theme inline {
-  --color-background: #f7faf3;
-  --color-foreground: #1a2e1a;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-matcha-50: #f0f7ea;
-  --color-matcha-100: #ddf0cf;
-  --color-matcha-200: #bde3a3;
-  --color-matcha-300: #93ce6c;
-  --color-matcha-400: #6db83f;
-  --color-matcha-500: #4f9e27;
-  --color-matcha-600: #3a7d1c;
-  --color-matcha-700: #2e6118;
-  --color-matcha-800: #264d16;
-  --color-matcha-900: #1f3f14;
+  /* surfaces */
+  --color-paper:         #f6f1e7;
+  --color-paper-2:       #efe8d8;
+  --color-card:          #fffdf8;
+  --color-card-2:        #faf5ea;
+  /* ink */
+  --color-ink:           #2a3124;
+  --color-ink-2:         #585e4d;
+  --color-ink-3:         #8c8a78;
+  --color-ink-4:         #aaa794;
+  /* lines */
+  --color-line:          #e8e1d0;
+  --color-line-2:        #ded5c1;
+  /* matcha */
+  --color-matcha:        #5f7850;
+  --color-matcha-600:    #56703f;
+  --color-matcha-700:    #44563a;
+  --color-matcha-800:    #36442e;
+  --color-matcha-soft:   #cdd9b8;
+  --color-matcha-tint:   #e7eddc;
+  --color-matcha-tint-2: #dde6c9;
+  /* hojicha */
+  --color-hojicha:       #a9774e;
+  --color-hojicha-2:     #93623c;
+  --color-hojicha-soft:  #ead6bf;
+  --color-hojicha-tint:  #f3e8d6;
+  /* status */
+  --color-ripe:          #7a8f4a;
+  --color-danger:        #a64b3e;
+  /* fonts */
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-sans:    'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
 }
 
+/* ── Base ──────────────────────────────────────────────────────────────── */
+:root {
+  --shadow-xs: 0 1px 2px rgba(62,52,28,0.05);
+  --shadow-sm: 0 1px 2px rgba(62,52,28,0.05), 0 2px 6px -2px rgba(62,52,28,0.06);
+  --shadow:    0 6px 20px -8px rgba(58,48,24,0.14), 0 2px 6px -3px rgba(58,48,24,0.08);
+  --shadow-lg: 0 22px 48px -16px rgba(52,44,22,0.22), 0 6px 16px -8px rgba(52,44,22,0.10);
+  --r-xs: 8px;  --r-sm: 12px;  --r: 18px;  --r-lg: 24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: #f6f1e7; }
+
 body {
-  background: var(--color-background);
-  color: var(--color-foreground);
-  font-family: var(--font-sans, Arial, sans-serif);
+  background: #f6f1e7;
+  color: #2a3124;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.005em;
+}
+
+::selection { background: #cdd9b8; color: #36442e; }
+
+/* ── Typography utilities ──────────────────────────────────────────────── */
+.ms-display {
+  font-family: 'Newsreader', Georgia, serif;
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+}
+.ms-serif {
+  font-family: 'Newsreader', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.ms-serif-i {
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+}
+.ms-mono {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: 0;
+}
+.ms-eyebrow {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #56703f;
+  font-weight: 500;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.ms-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: none; border-radius: 999px;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-weight: 600; font-size: 15px; line-height: 1;
+  padding: 14px 24px;
+  transition: transform .14s ease, box-shadow .2s ease, background .2s ease;
+  white-space: nowrap; cursor: pointer; user-select: none;
+}
+.ms-btn:active { transform: translateY(1px) scale(0.99); }
+
+.ms-btn-primary {
+  background: #56703f; color: #fcfdf8;
+  box-shadow: 0 6px 16px -7px rgba(68,86,58,0.7), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.ms-btn-primary:hover { background: #44563a; box-shadow: 0 10px 22px -8px rgba(68,86,58,0.65); }
+.ms-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ms-btn-ghost {
+  background: #fffdf8; color: #2a3124;
+  box-shadow: inset 0 0 0 1px #ded5c1, var(--shadow-xs);
+}
+.ms-btn-ghost:hover { background: #fff; box-shadow: inset 0 0 0 1px #ded5c1, var(--shadow-sm); }
+
+.ms-btn-quiet {
+  background: transparent; color: #44563a; padding: 10px 14px;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-weight: 600; font-size: 13.5px;
+  border: none; border-radius: 999px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: color .15s;
+}
+.ms-btn-quiet:hover { color: #36442e; }
+.ms-btn-quiet:disabled { opacity: 0.4; cursor: default; }
+
+.ms-btn-sm { padding: 10px 16px; font-size: 13.5px; }
+.ms-btn-lg { padding: 17px 30px; font-size: 16px; }
+.ms-btn-block { display: flex; width: 100%; }
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+.ms-card {
+  background: #fffdf8;
+  border-radius: var(--r);
+  box-shadow: inset 0 0 0 1px #e8e1d0, var(--shadow-sm);
+}
+.ms-card-quiet {
+  background: #fffdf8;
+  border-radius: var(--r);
+  box-shadow: inset 0 0 0 1px #e8e1d0;
+}
+
+/* ── Pills ─────────────────────────────────────────────────────────────── */
+.ms-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 500; line-height: 1;
+  padding: 6px 11px; border-radius: 999px;
+  background: #e7eddc; color: #44563a;
+  box-shadow: inset 0 0 0 1px rgba(95,120,80,0.16);
+  white-space: nowrap;
+}
+.ms-pill-bare {
+  background: #faf5ea; color: #585e4d;
+  box-shadow: inset 0 0 0 1px #ded5c1;
+}
+.ms-pill-warm {
+  background: #f3e8d6; color: #93623c;
+  box-shadow: inset 0 0 0 1px rgba(169,119,78,0.2);
+}
+.ms-pill-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; }
+.ms-pill-sm { padding: 4px 9px; font-size: 11px; }
+
+/* ── Taste bars ─────────────────────────────────────────────────────────── */
+.ms-taste-row { display: grid; grid-template-columns: 92px 1fr 18px; align-items: center; gap: 12px; }
+.ms-taste-label { font-size: 12.5px; color: #585e4d; font-weight: 500; }
+.ms-taste-track {
+  position: relative; height: 9px; border-radius: 999px;
+  background: #efe8d8;
+  box-shadow: inset 0 0 0 1px #ded5c1;
+  overflow: visible;
+}
+/* 5-segment tick marks */
+.ms-taste-track::after {
+  content: ''; position: absolute; inset: 0; overflow: hidden; border-radius: 999px;
+  background-image: repeating-linear-gradient(90deg, transparent 0, transparent calc(20% - 1px), #fffdf8 calc(20% - 1px), #fffdf8 20%);
+  opacity: 0.65; pointer-events: none; z-index: 2;
+}
+.ms-taste-fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #5f7850 0%, #6f8a57 100%);
+  box-shadow: inset 0 0 0 1px rgba(68,86,58,0.18);
+  z-index: 1;
+}
+.ms-taste-val { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #8c8a78; text-align: right; }
+
+/* ── Range slider ───────────────────────────────────────────────────────── */
+.ms-range { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; background: transparent; cursor: pointer; }
+.ms-range:focus { outline: none; }
+.ms-range::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; background: #efe8d8; box-shadow: inset 0 0 0 1px #ded5c1; }
+.ms-range::-moz-range-track { height: 8px; border-radius: 999px; background: #efe8d8; box-shadow: inset 0 0 0 1px #ded5c1; }
+.ms-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 26px; height: 26px; margin-top: -9px; border-radius: 999px;
+  background: #fffdf8; box-shadow: 0 2px 6px -1px rgba(60,52,28,0.3), inset 0 0 0 2px #56703f;
+  transition: transform .12s ease;
+}
+.ms-range::-webkit-slider-thumb:hover { transform: scale(1.08); }
+.ms-range::-moz-range-thumb {
+  width: 26px; height: 26px; border: none; border-radius: 999px;
+  background: #fffdf8; box-shadow: 0 2px 6px -1px rgba(60,52,28,0.3), inset 0 0 0 2px #56703f;
+}
+
+/* ── Form field ─────────────────────────────────────────────────────────── */
+.ms-field {
+  width: 100%; border: none; border-radius: var(--r-sm);
+  background: #fffdf8; color: #2a3124; font-size: 15px;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  padding: 13px 15px;
+  box-shadow: inset 0 0 0 1px #ded5c1;
+  transition: box-shadow .16s ease, background .16s ease;
+}
+.ms-field::placeholder { color: #aaa794; font-style: italic; }
+.ms-field:focus { outline: none; box-shadow: inset 0 0 0 1.5px #56703f, 0 0 0 4px rgba(86,112,63,0.12); background: #fff; }
+textarea.ms-field { resize: none; line-height: 1.55; }
+
+/* ── Drink image placeholder ────────────────────────────────────────────── */
+.ms-drink-img {
+  position: relative; overflow: hidden; border-radius: var(--r-sm);
+  background: var(--swatch, linear-gradient(160deg, #c9d6ad, #91a978));
+  box-shadow: inset 0 0 0 1px rgba(42,49,36,0.06);
+  display: flex; align-items: flex-end; justify-content: flex-start;
+}
+.ms-drink-img::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.16) 0 10px, transparent 10px 20px);
+}
+.ms-drink-img .foam {
+  position: absolute; border-radius: 999px;
+  background: radial-gradient(circle at 38% 34%, rgba(255,255,255,0.55), rgba(255,255,255,0.06) 70%);
+}
+.ms-drink-img .ph-tag {
+  position: relative; z-index: 1;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(40,46,30,0.55); background: rgba(255,253,248,0.72);
+  padding: 3px 7px; border-radius: 999px; margin: 8px;
+  backdrop-filter: blur(2px);
+}
+
+/* ── Scale buttons (quiz) ───────────────────────────────────────────────── */
+.ms-scale-btn {
+  flex: 1; border: none; background: #faf5ea; color: #8c8a78;
+  border-radius: var(--r-sm); padding: 18px 0;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 18px; font-weight: 500; cursor: pointer;
+  box-shadow: inset 0 0 0 1px #ded5c1;
+  transition: all .14s ease;
+}
+.ms-scale-btn:hover { box-shadow: inset 0 0 0 1px #cdd9b8; color: #2a3124; }
+.ms-scale-btn.selected {
+  background: #56703f; color: #fff;
+  box-shadow: 0 8px 18px -8px rgba(68,86,58,0.7);
+  transform: translateY(-2px);
+}
+
+/* ── Quiz progress ──────────────────────────────────────────────────────── */
+.ms-qp-seg {
+  flex: 1; height: 5px; border-radius: 999px;
+  background: #efe8d8; box-shadow: inset 0 0 0 1px #ded5c1; overflow: hidden;
+}
+.ms-qp-fill {
+  height: 100%; background: #56703f; border-radius: 999px;
+  transition: width .4s ease;
+}
+
+/* ── Misc ───────────────────────────────────────────────────────────────── */
+.ms-hairline { height: 1px; background: #e8e1d0; border: none; margin: 0; }
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes ms-spin { to { transform: rotate(360deg); } }
+@keyframes ms-fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes ms-pour { 0% { transform: scaleY(0.2); opacity: 0.4; } 100% { transform: scaleY(1); opacity: 1; } }
+.ms-anim-up { animation: ms-fade-up .45s cubic-bezier(.2,.7,.3,1) both; }
+
+/* ── Desktop 2-col detail layout ────────────────────────────────────────── */
+@media (min-width: 700px) {
+  .detail-2col {
+    grid-template-columns: 1.05fr 0.95fr !important;
+  }
+}
+
+/* ── Quiz results 2-col ────────────────────────────────────────────────── */
+@media (min-width: 760px) {
+  .quiz-2col {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) !important;
+  }
 }

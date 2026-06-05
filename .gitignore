@@ -19,6 +19,10 @@ build/
 .DS_Store
 Thumbs.db
 
+# Design ZIP (too large to commit; extracted to docs/design/)
+*.zip
+docs/design/matcha-scout/.thumbnail
+
 # IDE
 .vscode/
 .idea/

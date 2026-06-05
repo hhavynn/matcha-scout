@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Matcha Scout — Variations</title>
+<link rel="stylesheet" href="styles/matcha.css" />
+<link rel="stylesheet" href="styles/app.css" />
+<style>
+  html, body { margin: 0; height: 100%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#e7e1d3"/>
+    <circle cx="50" cy="50" r="26" fill="none" stroke="#5f7850" stroke-width="3" opacity="0.5"/>
+    <circle cx="50" cy="50" r="17" fill="#5f7850"/>
+    <circle cx="44" cy="44" r="5.5" fill="#fffdf8" opacity="0.42"/>
+  </svg>
+</template>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="data/drinks.js"></script>
+<script type="text/babel" src="frames/design-canvas.jsx"></script>
+<script type="text/babel" src="app/primitives.jsx"></script>
+<script type="text/babel" src="app/variations.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+const T = { strength: 5, sweet: 2, creamy: 3, earthy: 4, bitter: 4 };
+
+function Pane({ children, pad = 26 }) {
+  return (
+    <div className="ms" style={{ padding: pad, background: 'var(--paper)', minHeight: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
+      {children}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="taste" title="Taste profile visualization" subtitle="Same drink, three readouts — bars are the chosen primary">
+        <DCArtboard id="bars" label="A · Tasting bars (primary)" width={360} height={260}><Pane><VizBars taste={T} /></Pane></DCArtboard>
+        <DCArtboard id="radar" label="B · Radar / pentagon" width={300} height={300}><Pane><VizRadar taste={T} size={230} /></Pane></DCArtboard>
+        <DCArtboard id="dots" label="C · Segmented dots" width={360} height={300}><Pane><VizDots taste={T} /></Pane></DCArtboard>
+      </DCSection>
+
+      <DCSection id="rec" title="Recommendation card layouts" subtitle="How a ranked match presents itself">
+        <DCArtboard id="detailed" label="A · Full tasting card" width={420} height={420}><Pane><RecDetailed /></Pane></DCArtboard>
+        <DCArtboard id="compact" label="B · Compact list row" width={420} height={180}><Pane><RecCompact /></Pane></DCArtboard>
+        <DCArtboard id="chips" label="C · Flavor-chip card" width={420} height={340}><Pane><RecChips /></Pane></DCArtboard>
+      </DCSection>
+
+      <DCSection id="quiz" title="Quiz interaction" subtitle="How the tasting profile gets captured">
+        <DCArtboard id="guided" label="A · Guided, one at a time (primary)" width={400} height={290}><Pane><QuizGuided /></Pane></DCArtboard>
+        <DCArtboard id="sliders" label="B · All sliders, one screen" width={400} height={400}><Pane><QuizSliders /></Pane></DCArtboard>
+        <DCArtboard id="cards" label="C · Tap-a-vibe quick start" width={400} height={360}><Pane><QuizCards /></Pane></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
