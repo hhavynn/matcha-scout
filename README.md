@@ -12,7 +12,19 @@ AI-powered matcha discovery app that turns free-text reviews into taste profiles
 
 ## What It Does
 
-Matcha Scout helps people find matcha drinks that fit how they actually like matcha: strong or mild, sweet or unsweetened, creamy or clean, earthy or mellow. Users can browse fictional cafe drinks, take a preference quiz, receive explainable recommendations, and submit natural-language reviews. Reviews can be parsed into structured taste dimensions using Gemini, while the deployed backend currently defaults to safe mock parsing.
+Matcha Scout helps people find matcha drinks that fit how they actually like matcha: strong or mild, sweet or unsweetened, creamy or clean, earthy or mellow. Users can browse cafe drinks, take a preference quiz, receive explainable recommendations, and submit natural-language reviews. Exact drinks and reviews are user-submitted; taste profiles and confidence scoring are computed from Matcha Scout community reviews only (not Yelp ratings). Reviews are parsed into structured taste dimensions using Gemini; the deployed backend currently defaults to safe mock parsing.
+
+### Production-live endpoints (Phase 12+)
+
+| Endpoint | Description |
+|---|---|
+| `GET /cafes` | List all cafes |
+| `GET /cafes/{id}` | Cafe detail |
+| `GET /cafes/{id}/drinks` | Drinks at a cafe |
+| `POST /cafes/{id}/drinks` | Submit a user-added drink |
+| `POST /cafes/{id}/drinks-with-review` | Submit drink + first review together |
+| `GET /drinks/{id}/taste-profile` | Taste profile with confidence label/score |
+| `GET /recommendations?...` | Ranked matches with confidence fields |
 
 ## Why It Is Interesting
 
