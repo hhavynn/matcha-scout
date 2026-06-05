@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matcha-scout-api
+  namespace: matcha-scout-local
+  labels:
+    app.kubernetes.io/name: matcha-scout-api
+    app.kubernetes.io/part-of: matcha-scout
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: matcha-scout-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: matcha-scout-api
+        app.kubernetes.io/part-of: matcha-scout
+    spec:
+      containers:
+        - name: api
+          image: matcha-scout-api:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: matcha-scout-config
+            - secretRef:
+                name: matcha-scout-local-secrets
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              value: local
+            - name: AWS_SECRET_ACCESS_KEY
+              value: local
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10

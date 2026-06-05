@@ -50,6 +50,14 @@ The backend is deployed with AWS SAM. Local development is unchanged.
 
 ---
 
+## Local Kubernetes
+
+Phase 9 adds local-only Kubernetes manifests for running Matcha Scout in kind for DevOps learning and demos. This is not production Kubernetes and does not use AWS EKS; production still runs on Vercel plus AWS Lambda/API Gateway/DynamoDB.
+
+See [`docs/local-kubernetes.md`](docs/local-kubernetes.md) for setup, image builds, kind loading, seeding DynamoDB Local, port-forwarding, troubleshooting, and teardown.
+
+---
+
 ## Running locally
 
 ### Prerequisites

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: matcha-scout-local
+  labels:
+    app.kubernetes.io/name: matcha-scout
+    app.kubernetes.io/part-of: matcha-scout
+    matcha-scout.dev/environment: local

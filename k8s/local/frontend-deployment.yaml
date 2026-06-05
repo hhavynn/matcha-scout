@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matcha-scout-frontend
+  namespace: matcha-scout-local
+  labels:
+    app.kubernetes.io/name: matcha-scout-frontend
+    app.kubernetes.io/part-of: matcha-scout
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: matcha-scout-frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: matcha-scout-frontend
+        app.kubernetes.io/part-of: matcha-scout
+    spec:
+      containers:
+        - name: frontend
+          image: matcha-scout-frontend:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            # Browser-side API calls use localhost through kubectl port-forward.
+            - name: NEXT_PUBLIC_API_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: matcha-scout-config
+                  key: NEXT_PUBLIC_API_BASE_URL
+            # Server-rendered Next.js pages use the in-cluster API service.
+            - name: SERVER_API_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: matcha-scout-config
+                  key: SERVER_API_BASE_URL
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10

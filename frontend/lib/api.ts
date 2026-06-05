@@ -7,11 +7,20 @@ import type {
   RecommendationParams,
 } from "./types";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+function getBaseUrl(): string {
+  if (typeof window === "undefined") {
+    return (
+      process.env.SERVER_API_BASE_URL ??
+      process.env.NEXT_PUBLIC_API_BASE_URL ??
+      "http://localhost:8000"
+    );
+  }
+
+  return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+}
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${getBaseUrl()}${path}`, {
     cache: "no-store", // Never serve stale data from Next.js fetch cache
     ...options,
     headers: { "Content-Type": "application/json", ...options?.headers },
