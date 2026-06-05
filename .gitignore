@@ -27,6 +27,9 @@ docs/design/matcha-scout/.thumbnail
 infra/aws/samconfig.toml
 .aws-sam/
 
+# Vercel
+.vercel/
+
 # IDE
 .vscode/
 .idea/

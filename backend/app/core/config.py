@@ -22,5 +22,17 @@ class Settings:
     ai_provider: str = os.getenv("AI_PROVIDER", "gemini")
     use_mock_ai: bool = os.getenv("USE_MOCK_AI", "false").lower() == "true"
 
+    # CORS allowed origins — comma-separated list.
+    #   Local dev  → defaults to localhost:3000
+    #   AWS Lambda → set CORS_ALLOWED_ORIGINS to include the Vercel production URL
+    cors_allowed_origins_raw: str = os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    )
+
+    @property
+    def cors_allowed_origins(self) -> list[str]:
+        return [o.strip() for o in self.cors_allowed_origins_raw.split(",") if o.strip()]
+
 
 settings = Settings()

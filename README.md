@@ -17,20 +17,31 @@ An AI-powered matcha discovery and recommendation app. Submit free-text reviews;
 | **5** | Claude Design UI — premium matcha aesthetic, guided quiz, match ring, mobile bottom tab bar |
 | **6** | AWS prep — Lambda/Mangum adapter, SAM template, cost-safety docs |
 | **7** | AWS backend deployed — Lambda + DynamoDB + API Gateway live in `us-west-2` |
+| **8** | Frontend deployed to Vercel and connected to the live AWS backend |
 
-## Live AWS backend
+## Live production
 
-The backend is deployed to AWS Lambda + API Gateway. The base URL is:
+The frontend is deployed to Vercel:
+
+```
+https://matcha-scout.vercel.app
+```
+
+The backend is deployed to AWS Lambda + API Gateway:
 
 ```
 https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com
 ```
 
-To use it from the frontend, set `NEXT_PUBLIC_API_BASE_URL` in `frontend/.env.local`.
+Production Vercel uses this required environment variable:
 
-## AWS deployment (Phase 6 prep)
+```
+NEXT_PUBLIC_API_BASE_URL=https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com
+```
 
-The backend is ready for Lambda but **has not been deployed yet**. Local development is unchanged.
+## AWS deployment
+
+The backend is deployed with AWS SAM. Local development is unchanged.
 
 - Lambda handler: `backend/app/lambda_handler.py` (Mangum ASGI adapter)
 - SAM template: `infra/aws/template.yaml` (Lambda + DynamoDB + API Gateway HTTP API)
@@ -85,7 +96,7 @@ Visit: **http://localhost:3000**
 
 ### Backend (`.env` in repo root)
 ```
-AWS_REGION=us-east-1
+AWS_REGION=us-west-2
 DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000
 DYNAMODB_TABLE_NAME=matcha_scout
 AWS_ACCESS_KEY_ID=local
@@ -103,6 +114,8 @@ GEMINI_API_KEY=your_key_here
 ```
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
+
+For production Vercel, set `NEXT_PUBLIC_API_BASE_URL` to the live AWS API URL shown above.
 
 ---
 
@@ -192,6 +205,7 @@ matcha-scout/
 - DynamoDB data is in-memory — re-run `create_tables` + `seed_data` after `docker compose down`
 - Frontend is Next.js 16 App Router — server components fetch data directly, client components handle interactivity only
 - AWS is **not required** for local development — everything runs in Docker and Node
+- Phase 9 is planned for local Kubernetes manifests only, not production Kubernetes
 
 ---
 

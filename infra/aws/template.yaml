@@ -11,7 +11,7 @@ Transform: AWS::Serverless-2016-10-31
 #
 # Cost-safety notes:
 #   - DynamoDB BillingMode: PAY_PER_REQUEST  → $0 until you get real traffic
-#   - Lambda ReservedConcurrentExecutions: 10 → caps runaway loops
+#   - Lambda architecture: arm64 (Graviton2) — cheaper than x86_64
 #   - API Gateway HTTP API is ~3.5x cheaper than REST API
 #   - No VPC, no NAT Gateway, no always-on EC2
 # ─────────────────────────────────────────────────────────────────────────────
@@ -45,6 +45,14 @@ Parameters:
       Leave blank when UseMockAI=true.
       For production, prefer AWS Secrets Manager over this parameter.
 
+  FrontendOrigin:
+    Type: String
+    Default: "https://matcha-scout.vercel.app"
+    Description: >
+      Production frontend URL for CORS.
+      Set to your Vercel deployment URL (e.g. https://matcha-scout-xyz.vercel.app).
+      Comma-separated list supported by the FastAPI CORS_ALLOWED_ORIGINS env var.
+
 Globals:
   Function:
     Runtime: python3.12
@@ -59,6 +67,10 @@ Globals:
         USE_MOCK_AI: !Ref UseMockAI
         GEMINI_API_KEY: !Ref GeminiApiKey
         AI_PROVIDER: gemini
+        # CORS origins read by FastAPI CORSMiddleware via settings.cors_allowed_origins
+        CORS_ALLOWED_ORIGINS: !Sub
+          - "http://localhost:3000,http://127.0.0.1:3000,${Frontend}"
+          - Frontend: !Ref FrontendOrigin
 
 Resources:
 
@@ -138,8 +150,7 @@ Resources:
         AllowOrigins:
           - "http://localhost:3000"
           - "http://127.0.0.1:3000"
-          # Add your Vercel/production frontend URL here when known:
-          # - "https://your-app.vercel.app"
+          - !Ref FrontendOrigin
         AllowMethods:
           - GET
           - POST
