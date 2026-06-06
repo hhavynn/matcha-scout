@@ -113,13 +113,15 @@ def _create_drink_item(cafe_id: str, body: DrinkCreate) -> dict:
         "description": body.description or "",
         "price": Decimal(str(body.price)) if body.price is not None else Decimal("0"),
         "milk_options": milk_options,
-        "is_iced": body.is_iced,
-        "is_hot": body.is_hot,
         "source": "user_submitted",
         "verification_status": "unverified",
         "submitted_at": now,
         "created_at": now,
     }
+    if body.is_iced is not None:
+        drink_item["is_iced"] = body.is_iced
+    if body.is_hot is not None:
+        drink_item["is_hot"] = body.is_hot
     db.put_item(drink_item)
 
     # Neutral taste profile — review_count 0 means "unrated" confidence
@@ -162,8 +164,8 @@ class DrinkWithReviewCreate(BaseModel):
     description: Optional[str] = None
     price: Optional[float] = None
     milk_options: Optional[list[str]] = None
-    is_iced: bool = True
-    is_hot: bool = False
+    is_iced: Optional[bool] = None
+    is_hot: Optional[bool] = None
     raw_text: str
 
 

@@ -20,8 +20,18 @@ interface Props {
   cafeName?: string;
 }
 
+function temperatureLabel(drink: Drink): string | null {
+  if (drink.is_iced === true && drink.is_hot === true) return "iced + hot";
+  if (drink.is_iced === true && drink.is_hot === false) return "iced only";
+  if (drink.is_hot === true && drink.is_iced === false) return "hot only";
+  if (drink.is_iced === true) return "iced";
+  if (drink.is_hot === true) return "hot";
+  return null;
+}
+
 export default function DrinkCard({ drink, cafeName }: Props) {
   const swatch = SWATCHES[drink.id] ?? "linear-gradient(160deg, #c9d6ad, #91a978)";
+  const tempLabel = temperatureLabel(drink);
 
   return (
     <Link
@@ -93,8 +103,7 @@ export default function DrinkCard({ drink, cafeName }: Props) {
             {drink.milk_options.length > 3 && (
               <span className="ms-pill ms-pill-bare ms-pill-sm">+{drink.milk_options.length - 3}</span>
             )}
-            {drink.is_iced && <span className="ms-pill ms-pill-bare ms-pill-sm">iced</span>}
-            {drink.is_hot && <span className="ms-pill ms-pill-warm ms-pill-sm">hot</span>}
+            {tempLabel && <span className="ms-pill ms-pill-bare ms-pill-sm">{tempLabel}</span>}
             {drink.source === "admin_curated" && (
               <span className="ms-pill ms-pill-sm" style={{ fontSize: 10, opacity: 0.75 }}>curated</span>
             )}

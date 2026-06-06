@@ -17,6 +17,15 @@ interface Props {
   cafeName?: string;
 }
 
+function temperatureLabel(drink: Drink): string | null {
+  if (drink.is_iced === true && drink.is_hot === true) return "iced + hot";
+  if (drink.is_iced === true && drink.is_hot === false) return "iced only";
+  if (drink.is_hot === true && drink.is_iced === false) return "hot only";
+  if (drink.is_iced === true) return "iced";
+  if (drink.is_hot === true) return "hot";
+  return null;
+}
+
 export default function DrinkDetailClient({
   drinkId,
   initialDrink: drink,
@@ -27,6 +36,7 @@ export default function DrinkDetailClient({
   const [profile, setProfile] = useState<TasteProfile>(initialProfile);
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [latestReview, setLatestReview] = useState<Review | null>(null);
+  const tempLabel = temperatureLabel(drink);
 
   async function handleReviewSubmitted(review: Review) {
     setLatestReview(review);
@@ -89,11 +99,10 @@ export default function DrinkDetailClient({
               />
               {/* Temp pills on image */}
               <div className="flex gap-2" style={{ position: "absolute", top: 12, right: 12 }}>
-                {drink.is_iced && (
-                  <span className="ms-pill ms-pill-bare ms-pill-sm" style={{ background: "rgba(255,253,248,0.85)" }}>iced</span>
-                )}
-                {drink.is_hot && (
-                  <span className="ms-pill ms-pill-warm ms-pill-sm" style={{ background: "rgba(255,253,248,0.9)" }}>hot</span>
+                {tempLabel && (
+                  <span className="ms-pill ms-pill-bare ms-pill-sm" style={{ background: "rgba(255,253,248,0.85)" }}>
+                    {tempLabel}
+                  </span>
                 )}
               </div>
             </div>

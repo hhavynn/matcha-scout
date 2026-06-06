@@ -8,8 +8,8 @@ class DrinkCreate(BaseModel):
     description: Optional[str] = Field(default=None, max_length=500)
     price: Optional[float] = Field(default=None, gt=0)
     milk_options: Optional[List[str]] = None
-    is_iced: bool = True
-    is_hot: bool = False
+    is_iced: Optional[bool] = None
+    is_hot: Optional[bool] = None
 
 
 class Drink(BaseModel):

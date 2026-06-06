@@ -250,6 +250,69 @@ def test_create_drink_defaults_source_and_verification():
     assert data["verification_status"] == "unverified"
 
 
+def test_create_drink_omitted_temperature_serializes_null():
+    client = _make_test_client()
+    put_items = []
+
+    with (
+        patch("app.routers.cafes.db.get_item", return_value=SAMPLE_CAFE_ITEM),
+        patch("app.routers.cafes.db.put_item", side_effect=lambda item: put_items.append(item)),
+    ):
+        resp = client.post("/cafes/cafe-001/drinks", json={"name": "Unknown Temp Matcha"})
+
+    assert resp.status_code == 201, resp.text
+    data = resp.json()
+    assert data["is_iced"] is None
+    assert data["is_hot"] is None
+    drink_item = next(item for item in put_items if item["SK"] == "METADATA")
+    assert "is_iced" not in drink_item
+    assert "is_hot" not in drink_item
+
+
+def test_create_drink_null_temperature_serializes_null():
+    client = _make_test_client()
+    put_items = []
+
+    with (
+        patch("app.routers.cafes.db.get_item", return_value=SAMPLE_CAFE_ITEM),
+        patch("app.routers.cafes.db.put_item", side_effect=lambda item: put_items.append(item)),
+    ):
+        resp = client.post("/cafes/cafe-001/drinks", json={
+            "name": "Null Temp Matcha",
+            "is_iced": None,
+            "is_hot": None,
+        })
+
+    assert resp.status_code == 201, resp.text
+    data = resp.json()
+    assert data["is_iced"] is None
+    assert data["is_hot"] is None
+    drink_item = next(item for item in put_items if item["SK"] == "METADATA")
+    assert "is_iced" not in drink_item
+    assert "is_hot" not in drink_item
+
+
+def test_drink_response_preserves_explicit_false_temperature():
+    from app.routers.drinks import _item_to_drink
+
+    drink = _item_to_drink({
+        **SAMPLE_DRINK_ITEM,
+        "is_iced": False,
+        "is_hot": True,
+    })
+    assert drink.is_iced is False
+    assert drink.is_hot is True
+
+
+def test_drink_response_missing_temperature_is_null():
+    from app.routers.drinks import _item_to_drink
+
+    item = {k: v for k, v in SAMPLE_DRINK_ITEM.items() if k not in {"is_iced", "is_hot"}}
+    drink = _item_to_drink(item)
+    assert drink.is_iced is None
+    assert drink.is_hot is None
+
+
 def test_create_drink_name_required():
     client = _make_test_client()
     with patch("app.routers.cafes.db.get_item", return_value=SAMPLE_CAFE_ITEM):

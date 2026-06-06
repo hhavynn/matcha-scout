@@ -8,8 +8,8 @@ import type { Drink } from "@/lib/types";
 
 const FILTERS = [
   { id: "all",     label: "All drinks",  test: () => true },
-  { id: "iced",    label: "Iced",         test: (d: Drink) => d.is_iced },
-  { id: "hot",     label: "Hot",          test: (d: Drink) => d.is_hot },
+  { id: "iced",    label: "Iced",         test: (d: Drink) => d.is_iced === true },
+  { id: "hot",     label: "Hot",          test: (d: Drink) => d.is_hot === true },
   { id: "oat",     label: "Oat milk",     test: (d: Drink) => d.milk_options.includes("oat") },
   { id: "noMilk",  label: "No dairy",     test: (d: Drink) => !d.milk_options.includes("whole") },
 ];

@@ -41,8 +41,8 @@ export interface DrinkCreate {
   description?: string;
   price?: number;
   milk_options?: string[];
-  is_iced?: boolean;
-  is_hot?: boolean;
+  is_iced?: boolean | null;
+  is_hot?: boolean | null;
 }
 
 export interface TasteProfile {
