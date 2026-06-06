@@ -7,6 +7,7 @@ AI-powered matcha discovery app that turns free-text reviews into taste profiles
 ## Live Demo
 
 - Frontend: [https://matcha-scout.vercel.app](https://matcha-scout.vercel.app)
+- Help review verified drinks: [https://matcha-scout.vercel.app/review](https://matcha-scout.vercel.app/review)
 - API: [https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com](https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com)
 - API health check: [https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com/health](https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com/health)
 
@@ -197,6 +198,9 @@ matcha-scout/
 - [Project showcase](docs/project-showcase.md)
 - [Resume bullets](docs/resume-bullets.md)
 - [Launch copy](docs/launch-copy.md)
+- [Review collection guide](docs/review-collection.md)
+- [Share kit](docs/share-kit.md)
+- [Launch QA checklist](docs/launch-qa-checklist.md)
 - [Roadmap](docs/roadmap.md)
 - [Yelp ingestion guide](docs/yelp-ingestion.md)
 - [Local Kubernetes guide](docs/local-kubernetes.md)

@@ -41,7 +41,7 @@ export default function ReviewTargetsClient({ targets }: Props) {
             Help verify the taste
           </h1>
           <p style={{ fontSize: 14.5, color: "#585e4d", margin: 0, maxWidth: 640, lineHeight: 1.6 }}>
-            These admin-verified drinks need Matcha Scout reviews before their taste profiles become reliable.
+            Tried one of these? Leave a quick taste-focused review. Only review drinks you have actually tried.
           </p>
         </div>
         <RegionPicker value={region} onChange={setRegion} />
@@ -140,7 +140,7 @@ export default function ReviewTargetsClient({ targets }: Props) {
                       className="inline-flex items-center justify-between gap-2"
                       style={{ color: "#44563a", fontWeight: 700, fontSize: 13 }}
                     >
-                      Review this drink
+                      Review if you tried it
                       <IconArrow size={15} />
                     </div>
                   </div>
