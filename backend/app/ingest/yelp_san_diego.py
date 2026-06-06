@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from datetime import datetime, timezone
 
 from app.core.config import settings
@@ -29,6 +30,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--apply", action="store_true", help="Write to local DynamoDB. Requires --local.")
     parser.add_argument("--local", action="store_true", help="Confirm this run targets local/admin DynamoDB only.")
     parser.add_argument("--no-overwrite", action="store_true", help="Preserve existing user-owned cafe fields when updating.")
+    parser.add_argument(
+        "--request-delay", type=float, default=0.5,
+        help="Seconds to wait between Yelp API calls to stay under per-second rate limits (default: 0.5).",
+    )
     return parser.parse_args()
 
 
@@ -64,6 +69,8 @@ def run(args: argparse.Namespace) -> int:
         cafe = normalize_yelp_business(business, location_label=args.location, ingested_at=ingested_at)
         reviews = []
         if args.include_reviews:
+            # Pause between calls to respect Yelp's per-second rate limit.
+            time.sleep(args.request_delay)
             reviews = [
                 normalize_yelp_review_excerpt(review, index=i, ingested_at=ingested_at)
                 for i, review in enumerate(get_business_reviews(business["id"]))
