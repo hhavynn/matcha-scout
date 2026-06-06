@@ -22,6 +22,8 @@ class Cafe(BaseModel):
     phone: Optional[str] = None
     price: Optional[str] = None
     last_ingested_at: Optional[datetime] = None
+    region_key: Optional[str] = None
+    region_label: Optional[str] = None
 
 
 class ExternalReviewExcerpt(BaseModel):

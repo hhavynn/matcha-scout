@@ -133,6 +133,35 @@ SK = REVIEW#...
 
 Only Matcha Scout user reviews contribute to drink taste profiles.
 
+## Orange County Ingestion
+
+Orange County uses a multi-city search strategy to get broad coverage.
+The script searches Irvine, Costa Mesa, Garden Grove, and other OC cities,
+deduplicates by Yelp business ID, and caps at `--limit`.
+
+```bash
+# OC dry-run
+docker compose exec api python -m app.ingest.yelp_region_ingestion \
+  --region orange-county --limit 20 --term matcha \
+  --include-reviews --dry-run --request-delay 0.6
+
+# OC apply locally
+docker compose exec api python -m app.ingest.yelp_region_ingestion \
+  --region orange-county --limit 20 --term matcha \
+  --include-reviews --apply --local --request-delay 0.6
+```
+
+For San Diego (single location):
+
+```bash
+docker compose exec api python -m app.ingest.yelp_region_ingestion \
+  --region san-diego --limit 20 --term matcha \
+  --include-reviews --apply --local --request-delay 0.6
+```
+
+See [docs/regions-and-location.md](regions-and-location.md) for the complete
+region strategy, rate-limit guidance, and how to add new regions.
+
 ## Full San Diego Curation Workflow
 
 After Yelp ingestion, use the manual curation script to add verified exact drinks.

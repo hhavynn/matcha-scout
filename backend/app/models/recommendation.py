@@ -11,6 +11,7 @@ class RecommendationRequest(BaseModel):
     price_max: Optional[float] = Field(default=None, gt=0)
     milk_type: Optional[str] = None
     limit: int = Field(default=10, ge=1, le=50)
+    region_key: Optional[str] = None
 
 
 class TasteProfileSnapshot(BaseModel):

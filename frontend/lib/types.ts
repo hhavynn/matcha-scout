@@ -15,6 +15,8 @@ export interface Cafe {
   phone?: string;
   price?: string;
   last_ingested_at?: string;
+  region_key?: string;
+  region_label?: string;
 }
 
 export interface Drink {
@@ -116,4 +118,13 @@ export interface RecommendationParams {
   price_max?: number;
   milk_type?: string;
   limit?: number;
+  region_key?: string;
 }
+
+export type RegionKey = "all" | "san-diego" | "orange-county";
+
+export const REGIONS: { key: RegionKey; label: string }[] = [
+  { key: "all", label: "All Regions" },
+  { key: "san-diego", label: "San Diego" },
+  { key: "orange-county", label: "Orange County" },
+];
