@@ -50,6 +50,28 @@ class CurationError(ValueError):
     pass
 
 
+_PLACEHOLDER_TERMS = (
+    "todo",
+    "example",
+    "placeholder",
+    "unknown",
+    "tbd",
+    "fixme",
+    "replace",
+)
+
+
+def _is_blank(value: Any) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
+def _has_placeholder(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    lowered = value.lower()
+    return any(term in lowered for term in _PLACEHOLDER_TERMS)
+
+
 def validate_drink_entry(entry: dict[str, Any], index: int) -> None:
     """Raise CurationError with a human-readable message if the entry is invalid."""
     label = f"Entry #{index} ({entry.get('name', 'no name')!r})"
@@ -57,6 +79,8 @@ def validate_drink_entry(entry: dict[str, Any], index: int) -> None:
     name = entry.get("name")
     if not name or not str(name).strip():
         raise CurationError(f"{label}: 'name' is required and cannot be empty.")
+    if _has_placeholder(str(name)):
+        raise CurationError(f"{label}: 'name' contains placeholder text.")
     if len(str(name).strip()) > 120:
         raise CurationError(f"{label}: 'name' exceeds 120 characters.")
 
@@ -85,6 +109,24 @@ def validate_drink_entry(entry: dict[str, Any], index: int) -> None:
             f"{label}: must supply either (cafe_external_source + cafe_external_id) or cafe_id."
         )
 
+    verification_source = entry.get("verification_source")
+    verification_url = entry.get("verification_url")
+    verification_notes = entry.get("verification_notes") or entry.get("curation_notes")
+    if _is_blank(verification_source):
+        raise CurationError(f"{label}: 'verification_source' is required.")
+    if _has_placeholder(str(verification_source)):
+        raise CurationError(f"{label}: 'verification_source' contains placeholder text.")
+    if _is_blank(verification_url) and _is_blank(verification_notes):
+        raise CurationError(
+            f"{label}: provide at least one of 'verification_url' or 'verification_notes'."
+        )
+    for field_name, value in (
+        ("verification_url", verification_url),
+        ("verification_notes", verification_notes),
+    ):
+        if value is not None and _has_placeholder(str(value)):
+            raise CurationError(f"{label}: '{field_name}' contains placeholder text.")
+
 
 def normalize_entry(entry: dict[str, Any]) -> dict[str, Any]:
     """Return a normalized copy of a curation entry (does not mutate input)."""
@@ -94,8 +136,8 @@ def normalize_entry(entry: dict[str, Any]) -> dict[str, Any]:
         out["description"] = str(out["description"]).strip()
     if out.get("milk_options"):
         out["milk_options"] = [m.lower().strip() for m in out["milk_options"] if str(m).strip()]
-    out.setdefault("is_iced", True)
-    out.setdefault("is_hot", False)
+    else:
+        out["milk_options"] = []
     out.setdefault("verification_status", "admin_curated")
     if out.get("verification_source"):
         out["verification_source"] = str(out["verification_source"]).strip()
@@ -207,8 +249,6 @@ def process_entry(
         "description": entry.get("description") or "",
         "price": Decimal(str(entry["price"])) if entry.get("price") is not None else Decimal("0"),
         "milk_options": entry.get("milk_options") or [],
-        "is_iced": entry["is_iced"],
-        "is_hot": entry["is_hot"],
         "source": "admin_curated",
         "verification_status": entry.get("verification_status", "admin_curated"),
         "verification_source": entry.get("verification_source") or "",
@@ -217,6 +257,10 @@ def process_entry(
         "submitted_at": now,
         "created_at": now,
     }
+    if entry.get("is_iced") is not None:
+        drink_item["is_iced"] = entry["is_iced"]
+    if entry.get("is_hot") is not None:
+        drink_item["is_hot"] = entry["is_hot"]
 
     db.create_admin_curated_drink(cafe_id, drink_item)
     result.created.append(f"{entry['name']} @ {cafe_name} [{drink_id}]")

@@ -26,8 +26,8 @@ export interface Drink {
   description: string;
   price: number;
   milk_options: string[];
-  is_iced: boolean;
-  is_hot: boolean;
+  is_iced: boolean | null;
+  is_hot: boolean | null;
   image_url?: string;
   created_at: string;
   source?: string;

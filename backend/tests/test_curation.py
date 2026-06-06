@@ -53,6 +53,9 @@ VALID_ENTRY = {
     "milk_options": ["Oat", "Whole"],
     "is_iced": True,
     "is_hot": False,
+    "verification_source": "official_menu",
+    "verification_url": "https://menus.local/verdant",
+    "verification_notes": "Verified from official menu.",
 }
 
 
@@ -104,10 +107,25 @@ def test_price_none_is_valid():
     validate_drink_entry(entry, 1)  # no price is fine
 
 
+def test_description_none_is_valid():
+    entry = {**VALID_ENTRY, "description": None}
+    validate_drink_entry(entry, 1)
+
+
+def test_empty_milk_options_is_valid():
+    entry = {**VALID_ENTRY, "milk_options": []}
+    validate_drink_entry(entry, 1)
+
+
 def test_milk_options_not_list_rejected():
     entry = {**VALID_ENTRY, "milk_options": "oat"}
     with pytest.raises(CurationError, match="milk_options"):
         validate_drink_entry(entry, 1)
+
+
+def test_null_temperature_flags_are_valid():
+    entry = {**VALID_ENTRY, "is_iced": None, "is_hot": None}
+    validate_drink_entry(entry, 1)
 
 
 def test_is_iced_non_bool_rejected():
@@ -127,8 +145,35 @@ def test_cafe_via_external_source_passes():
         "cafe_external_source": "yelp",
         "cafe_external_id": "abc123",
         "name": "Matcha Latte",
+        "verification_source": "official_menu",
+        "verification_url": "https://menus.local/verdant",
     }
     validate_drink_entry(entry, 1)  # should not raise
+
+
+def test_missing_verification_source_rejected():
+    entry = {**VALID_ENTRY}
+    del entry["verification_source"]
+    with pytest.raises(CurationError, match="verification_source"):
+        validate_drink_entry(entry, 1)
+
+
+def test_missing_verification_url_and_notes_rejected():
+    entry = {**VALID_ENTRY, "verification_url": None, "verification_notes": None}
+    with pytest.raises(CurationError, match="verification_url"):
+        validate_drink_entry(entry, 1)
+
+
+def test_placeholder_name_rejected():
+    entry = {**VALID_ENTRY, "name": "TODO Matcha Latte"}
+    with pytest.raises(CurationError, match="placeholder"):
+        validate_drink_entry(entry, 1)
+
+
+def test_placeholder_verification_rejected():
+    entry = {**VALID_ENTRY, "verification_notes": "TODO verify later"}
+    with pytest.raises(CurationError, match="verification_notes"):
+        validate_drink_entry(entry, 1)
 
 
 # ── normalize_entry ───────────────────────────────────────────────────────────
@@ -146,10 +191,16 @@ def test_name_stripped():
 
 
 def test_defaults_applied():
-    entry = {"cafe_id": "cafe-001", "name": "Latte"}
+    entry = {
+        "cafe_id": "cafe-001",
+        "name": "Latte",
+        "verification_source": "official_menu",
+        "verification_url": "https://menus.local/verdant",
+    }
     result = normalize_entry(entry)
-    assert result["is_iced"] is True
-    assert result["is_hot"] is False
+    assert "is_iced" not in result
+    assert "is_hot" not in result
+    assert result["milk_options"] == []
     assert result["verification_status"] == "admin_curated"
 
 
@@ -163,12 +214,12 @@ def test_verification_metadata_normalized():
     entry = {
         **VALID_ENTRY,
         "verification_source": " official_menu ",
-        "verification_url": " https://example.com/menu ",
+        "verification_url": " https://menus.local/verdant ",
         "verification_notes": " Seen on menu. ",
     }
     result = normalize_entry(entry)
     assert result["verification_source"] == "official_menu"
-    assert result["verification_url"] == "https://example.com/menu"
+    assert result["verification_url"] == "https://menus.local/verdant"
     assert result["verification_notes"] == "Seen on menu."
 
 
@@ -310,7 +361,7 @@ def test_created_drink_preserves_verification_metadata(capsys):
     entry = {
         **VALID_ENTRY,
         "verification_source": "official_menu",
-        "verification_url": "https://example.com/menu",
+        "verification_url": "https://menus.local/verdant",
         "verification_notes": "Verified from official menu.",
     }
 
@@ -328,7 +379,7 @@ def test_created_drink_preserves_verification_metadata(capsys):
 
     drink = created_items[0]
     assert drink["verification_source"] == "official_menu"
-    assert drink["verification_url"] == "https://example.com/menu"
+    assert drink["verification_url"] == "https://menus.local/verdant"
     assert drink["verification_notes"] == "Verified from official menu."
 
 
@@ -350,6 +401,28 @@ def test_created_drink_milk_normalized(capsys):
         )
 
     assert created_items[0]["milk_options"] == ["oat", "whole"]
+
+
+def test_created_drink_omits_unknown_temperature_fields(capsys):
+    result = CurationResult()
+    created_items = []
+    entry = {**VALID_ENTRY, "milk_options": [], "is_iced": None, "is_hot": None}
+
+    with patch("app.ingest.manual_drink_curation.db") as mock_db:
+        mock_db.get_item.return_value = SAMPLE_CAFE
+        mock_db.find_existing_drink_for_cafe.return_value = None
+        mock_db.create_admin_curated_drink.side_effect = lambda cid, d: created_items.append(d) or d
+        process_entry(
+            entry, 1,
+            applying=True,
+            allow_overwrite=False,
+            now="2026-06-05T00:00:00Z",
+            result=result,
+        )
+
+    assert created_items[0]["milk_options"] == []
+    assert "is_iced" not in created_items[0]
+    assert "is_hot" not in created_items[0]
 
 
 # ── db.create_admin_curated_drink initializes neutral taste profile ───────────

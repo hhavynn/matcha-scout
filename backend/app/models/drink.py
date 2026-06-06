@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Literal
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -19,8 +19,8 @@ class Drink(BaseModel):
     description: str
     price: float
     milk_options: List[str]
-    is_iced: bool
-    is_hot: bool
+    is_iced: Optional[bool] = None
+    is_hot: Optional[bool] = None
     image_url: Optional[str] = None
     created_at: datetime
     source: Optional[str] = None

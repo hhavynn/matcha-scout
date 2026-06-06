@@ -12,6 +12,8 @@ Before applying drinks to production, confirm:
 - [ ] Each drink entry has a `verification_source` and ideally a `verification_url`
 - [ ] Drink names are copied from official menus, not paraphrased from Yelp reviews
 - [ ] Prices are from the menu; `null` is fine if unknown
+- [ ] Empty `milk_options` means the menu did not list milk choices; do not guess
+- [ ] `null` `is_iced` / `is_hot` means temperature availability is unknown; do not guess
 - [ ] `cafe_id` matches a real cafe in production (`GET /cafes` to confirm)
 - [ ] Dry-run passes with no errors
 - [ ] Local apply passes on Docker Compose
