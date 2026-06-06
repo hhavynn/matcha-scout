@@ -118,6 +118,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               >
                 Cafes
               </Link>
+              <Link
+                href="/review"
+                className="text-sm font-medium rounded-full px-3.5 py-2 transition-colors"
+                style={{ color: "#585e4d" }}
+              >
+                Review
+              </Link>
             </nav>
 
             {/* Desktop CTA */}
@@ -166,6 +173,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           >
             <span className="flex items-center justify-center h-6"><IconLeaf size={20} /></span>
             Cafes
+          </Link>
+          <Link
+            href="/review"
+            className="flex-1 flex flex-col items-center gap-1 pt-2 pb-1"
+            style={{ color: "#8c8a78", fontSize: 10.5, fontWeight: 600 }}
+          >
+            <span className="flex items-center justify-center h-6"><IconGrid size={20} /></span>
+            Review
           </Link>
           <Link
             href="/quiz"

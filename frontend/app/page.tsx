@@ -78,6 +78,9 @@ export default function HomePage() {
               <Link href="/drinks" className="ms-btn ms-btn-ghost ms-btn-lg" style={{ textDecoration: "none" }}>
                 Browse drinks
               </Link>
+              <Link href="/review" className="ms-btn ms-btn-ghost ms-btn-lg" style={{ textDecoration: "none" }}>
+                Help review drinks
+              </Link>
             </div>
             {/* Proof stats */}
             <div
@@ -85,11 +88,11 @@ export default function HomePage() {
               style={{ fontSize: 12.5, color: "#8c8a78" }}
             >
               <span>
-                <strong style={{ color: "#585e4d" }}>10</strong> drinks
+                <strong style={{ color: "#585e4d" }}>24</strong> verified drinks
               </span>
               <span style={{ width: 4, height: 4, borderRadius: 9, background: "#aaa794", display: "inline-block" }} />
               <span>
-                <strong style={{ color: "#585e4d" }}>5</strong> cafes
+                <strong style={{ color: "#585e4d" }}>305</strong> cafes
               </span>
               <span style={{ width: 4, height: 4, borderRadius: 9, background: "#aaa794", display: "inline-block" }} />
               <span>5-dimension taste profiles</span>

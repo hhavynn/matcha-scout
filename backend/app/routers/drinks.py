@@ -1,10 +1,13 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 from app.services import db
-from app.models.drink import Drink
+from app.models.drink import Drink, ReviewTargetDrink
 from app.models.taste_profile import TasteProfile, compute_confidence
 
 router = APIRouter(prefix="/drinks", tags=["drinks"])
+
+VERIFIED_DRINK_STATUSES = {"admin_curated", "admin_verified"}
+VERIFIED_DRINK_SOURCES = {"admin_curated"}
 
 
 def _item_to_drink(item: dict) -> Drink:
@@ -43,6 +46,31 @@ def _item_to_taste_profile(item: dict) -> TasteProfile:
     )
 
 
+def _is_verified_review_target(item: dict) -> bool:
+    return (
+        item.get("source") in VERIFIED_DRINK_SOURCES
+        or item.get("verification_status") in VERIFIED_DRINK_STATUSES
+    )
+
+
+def _profile_by_drink_id() -> dict[str, dict]:
+    return {
+        item["drink_id"]: item
+        for item in db.scan_by_sk("TASTE_PROFILE")
+        if item.get("drink_id")
+    }
+
+
+def _review_target_sort_key(target: ReviewTargetDrink) -> tuple[int, int, str, str]:
+    verified_rank = 0 if _is_verified_review_target(target.model_dump()) else 1
+    return (
+        target.review_count,
+        verified_rank,
+        target.cafe_name.casefold(),
+        target.name.casefold(),
+    )
+
+
 @router.get("", response_model=list[Drink])
 def list_drinks(cafe_id: Optional[str] = Query(default=None)):
     if cafe_id:
@@ -52,6 +80,51 @@ def list_drinks(cafe_id: Optional[str] = Query(default=None)):
     else:
         items = db.scan_by_entity_type("DRINK")
     return [_item_to_drink(item) for item in items]
+
+
+@router.get("/review-targets", response_model=list[ReviewTargetDrink])
+def list_review_targets(
+    region_key: Optional[str] = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    max_review_count: int = Query(default=1, ge=0, le=100),
+):
+    drinks = db.scan_by_entity_type("DRINK")
+    profiles = _profile_by_drink_id()
+    cafes = db.get_all_cafes_by_id()
+    targets = []
+
+    for item in drinks:
+        if not _is_verified_review_target(item):
+            continue
+
+        cafe = cafes.get(item.get("cafe_id"))
+        if not cafe:
+            continue
+        if region_key and cafe.get("region_key") != region_key:
+            continue
+
+        profile = profiles.get(item["drink_id"], {})
+        review_count = int(profile.get("review_count", 0))
+        if review_count > max_review_count:
+            continue
+
+        confidence_label, confidence_score = compute_confidence(review_count)
+        drink = _item_to_drink(item)
+        targets.append(
+            ReviewTargetDrink(
+                **drink.model_dump(),
+                cafe_name=cafe.get("name", ""),
+                cafe_location=cafe.get("location"),
+                region_key=cafe.get("region_key"),
+                region_label=cafe.get("region_label"),
+                review_count=review_count,
+                confidence_label=confidence_label,
+                confidence_score=confidence_score,
+            )
+        )
+
+    targets.sort(key=_review_target_sort_key)
+    return targets[:limit]
 
 
 @router.get("/{drink_id}", response_model=Drink)

@@ -27,3 +27,13 @@ class Drink(BaseModel):
     verification_status: Optional[str] = None
     submitted_at: Optional[datetime] = None
     submitted_by_session: Optional[str] = None
+
+
+class ReviewTargetDrink(Drink):
+    cafe_name: str
+    cafe_location: Optional[str] = None
+    region_key: Optional[str] = None
+    region_label: Optional[str] = None
+    review_count: int = 0
+    confidence_label: str
+    confidence_score: float

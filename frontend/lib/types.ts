@@ -36,6 +36,16 @@ export interface Drink {
   submitted_by_session?: string;
 }
 
+export interface ReviewTargetDrink extends Drink {
+  cafe_name: string;
+  cafe_location?: string;
+  region_key?: string;
+  region_label?: string;
+  review_count: number;
+  confidence_label: string;
+  confidence_score: number;
+}
+
 export interface DrinkCreate {
   name: string;
   description?: string;

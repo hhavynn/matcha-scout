@@ -11,9 +11,10 @@ interface Props {
   cafe: Cafe;
   initialDrinks: Drink[];
   cafeMap: Record<string, string>;
+  reviewTargetIds: string[];
 }
 
-export default function CafeDetailClient({ cafe, initialDrinks, cafeMap }: Props) {
+export default function CafeDetailClient({ cafe, initialDrinks, cafeMap, reviewTargetIds }: Props) {
   const [drinks, setDrinks] = useState<Drink[]>(initialDrinks);
   const [showForm, setShowForm] = useState(false);
 
@@ -203,7 +204,18 @@ export default function CafeDetailClient({ cafe, initialDrinks, cafeMap }: Props
           style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}
         >
           {drinks.map((drink) => (
-            <DrinkCard key={drink.id} drink={drink} cafeName={cafeMap[drink.cafe_id] ?? cafe.name} />
+            <div key={drink.id} className="flex flex-col gap-2">
+              <DrinkCard drink={drink} cafeName={cafeMap[drink.cafe_id] ?? cafe.name} />
+              {reviewTargetIds.includes(drink.id) && (
+                <Link
+                  href={`/drinks/${drink.id}#review`}
+                  className="ms-btn ms-btn-ghost ms-btn-sm"
+                  style={{ textDecoration: "none", justifyContent: "center" }}
+                >
+                  Be the first to review
+                </Link>
+              )}
+            </div>
           ))}
         </div>
       )}

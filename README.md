@@ -23,6 +23,7 @@ Matcha Scout helps people find matcha drinks that fit how they actually like mat
 | `GET /cafes/{id}/drinks` | Drinks at a cafe |
 | `POST /cafes/{id}/drinks` | Submit a user-added drink |
 | `POST /cafes/{id}/drinks-with-review` | Submit drink + first review together |
+| `GET /drinks/review-targets` | Read-only queue of verified drinks that need Matcha Scout reviews |
 | `GET /drinks/{id}/taste-profile` | Taste profile with confidence label/score |
 | `GET /recommendations?...` | Ranked matches with confidence fields |
 
@@ -74,6 +75,7 @@ Production Kubernetes is intentionally not used. Kubernetes manifests are local-
 - Browse page with search, filters, sorting, cafe names, and drink cards.
 - Cafe directory with Yelp source badges, ratings, and per-cafe drink listings.
 - User-submitted drinks: anonymous users can add exact drinks they tried at a real cafe.
+- Review queue for admin-verified drinks with low or unrated Matcha Scout confidence, including region filtering and direct links to review forms.
 - Confidence scoring: taste profiles are rated Unrated / Low / Medium / High based on Matcha Scout review count — never Yelp ratings. See [docs/user-submitted-drinks.md](docs/user-submitted-drinks.md).
 - Drink detail page with taste profile bars, confidence badge, review history, and review submission.
 - AI parsing flow for natural-language reviews into structured taste ratings.
@@ -163,6 +165,7 @@ GET  /health
 GET  /cafes
 GET  /cafes/{id}
 GET  /drinks
+GET  /drinks/review-targets
 GET  /drinks/{id}
 GET  /drinks/{id}/taste-profile
 GET  /drinks/{id}/reviews

@@ -37,6 +37,10 @@ export default function DrinkDetailClient({
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [latestReview, setLatestReview] = useState<Review | null>(null);
   const tempLabel = temperatureLabel(drink);
+  const isVerifiedDrink =
+    drink.source === "admin_curated" ||
+    drink.verification_status === "admin_curated" ||
+    drink.verification_status === "admin_verified";
 
   async function handleReviewSubmitted(review: Review) {
     setLatestReview(review);
@@ -176,6 +180,7 @@ export default function DrinkDetailClient({
 
           {/* Submit review */}
           <div
+            id="review"
             style={{
               background: "#fffdf8",
               borderRadius: 18,
@@ -187,8 +192,26 @@ export default function DrinkDetailClient({
               Write a review
             </h2>
             <p style={{ fontSize: 13, color: "#8c8a78", marginBottom: 16 }}>
-              Describe what you tasted. The AI parses your words into structured taste ratings.
+              {isVerifiedDrink && profile.review_count === 0
+                ? "Be the first Matcha Scout reviewer for this verified drink."
+                : "Describe what you tasted. The AI parses your words into structured taste ratings."}
             </p>
+            {isVerifiedDrink && profile.review_count <= 1 && (
+              <div
+                style={{
+                  background: "#f5f2ea",
+                  borderRadius: 14,
+                  padding: "10px 12px",
+                  marginBottom: 14,
+                  boxShadow: "inset 0 0 0 1px #e0dbc8",
+                  color: "#585e4d",
+                  fontSize: 12.5,
+                  lineHeight: 1.5,
+                }}
+              >
+                Reviews here improve recommendations for everyone. Yelp ratings and excerpts do not count toward this confidence score.
+              </div>
+            )}
             <ReviewForm drinkId={drinkId} onSubmitted={handleReviewSubmitted} />
           </div>
 

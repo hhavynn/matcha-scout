@@ -2,6 +2,7 @@ import type {
   Cafe,
   Drink,
   DrinkCreate,
+  ReviewTargetDrink,
   TasteProfile,
   Review,
   ExternalReviewExcerpt,
@@ -51,6 +52,18 @@ export async function getCafe(id: string): Promise<Cafe> {
 
 export async function getDrinks(): Promise<Drink[]> {
   return apiFetch<Drink[]>("/drinks");
+}
+
+export async function getReviewTargets(
+  regionKey?: string,
+  limit = 80,
+  maxReviewCount = 1
+): Promise<ReviewTargetDrink[]> {
+  const qs = new URLSearchParams();
+  qs.set("limit", String(limit));
+  qs.set("max_review_count", String(maxReviewCount));
+  if (regionKey && regionKey !== "all") qs.set("region_key", regionKey);
+  return apiFetch<ReviewTargetDrink[]>(`/drinks/review-targets?${qs.toString()}`);
 }
 
 export async function getDrink(id: string): Promise<Drink> {
