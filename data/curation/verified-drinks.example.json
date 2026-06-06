@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "source_note": "Verified drinks curation file. Every real entry must cite a verification_source and verification_url when one exists. Do not add guessed drinks.",
+  "drinks": [
+    {
+      "_comment": "EXAMPLE only. Replace every placeholder with a real cafe_id from export_curation_targets output and a drink verified from a primary source.",
+      "cafe_id": "example-cafe-id-from-checklist",
+      "cafe_name_hint": "Example Cafe Name",
+      "name": "Exact Menu Drink Name",
+      "description": "Optional verified menu description, or null if unknown.",
+      "price": null,
+      "milk_options": ["whole", "oat", "almond"],
+      "is_iced": true,
+      "is_hot": true,
+      "verification_status": "admin_verified",
+      "verification_source": "official_menu",
+      "verification_url": "https://example.com/official-menu",
+      "verification_notes": "Example only. Record the verification date and what source was checked."
+    },
+    {
+      "_comment": "EXAMPLE for an in-person verification where no URL is available.",
+      "cafe_id": "example-second-cafe-id",
+      "cafe_name_hint": "Second Example Cafe",
+      "name": "Exact Printed Menu Drink Name",
+      "description": null,
+      "price": 7.5,
+      "milk_options": ["none"],
+      "is_iced": false,
+      "is_hot": true,
+      "verification_status": "admin_verified",
+      "verification_source": "personal_visit",
+      "verification_url": null,
+      "verification_notes": "Example only. Replace with visit date and printed-menu notes."
+    }
+  ]
+}

@@ -1,5 +1,41 @@
 # Manual Drink Curation
 
+## How to pick cafes to curate first
+
+With 150+ cafes per region in production, you cannot verify all of them at once.
+Use the **curation priority export script** to generate a ranked checklist:
+
+```bash
+# From local DynamoDB (Docker running):
+docker compose exec api python -m app.ingest.export_curation_targets \
+  --region san-diego --source local \
+  --limit 50 --sort relevance \
+  --output data/curation/my-san-diego-production-curation.local.md
+
+# From production DynamoDB (AWS credentials, no DYNAMODB_ENDPOINT_URL):
+python -m app.ingest.export_curation_targets \
+  --region san-diego --source production \
+  --limit 50 --sort relevance \
+  --output data/curation/my-san-diego-production-curation.local.md
+```
+
+The script ranks cafes by "curation priority" — a heuristic based on name/category keywords
+("matcha", "tea rooms", "bubble tea", "japanese dessert") weighted by popularity. It is not a
+recommendation quality score; it helps you spend verification time on the most relevant venues.
+
+The output file is gitignored. Do not commit it.
+
+## How to use the production curation checklist
+
+Open `data/curation/my-san-diego-production-curation.local.md`. For each cafe:
+
+1. Check the Yelp URL to find the cafe's menu or website link.
+2. Navigate to the cafe's **own website** (not Yelp) and find the menu.
+3. If a matcha drink appears on the official menu, record it in the checklist table.
+4. Once you have 10–25 verified entries, fill `data/curation/my-san-diego-drinks.json`.
+5. Run `manual_drink_curation.py --dry-run` to validate.
+6. Apply locally, verify via the API, then follow `docs/production-drink-curation.md`.
+
 ## Why exact drinks are manually curated
 
 Yelp gives Matcha Scout real San Diego cafe metadata, but it does not give reliable exact
@@ -53,7 +89,9 @@ The file must be a JSON object with a `"drinks"` array. Each entry supports:
 | `is_iced` | No | Default: `true` |
 | `is_hot` | No | Default: `false` |
 | `verification_status` | No | Default: `"admin_curated"`; use `"admin_verified"` once personally confirmed |
-| `curation_notes` | No | Free text; ignored by the script; useful for your own records |
+| `verification_source` | Yes for real entries | `"official_menu"`, `"personal_visit"`, `"cafe_website"`, or `"user_submission"` |
+| `verification_url` | When available | Official menu/source URL; use `null` for an in-person-only source |
+| `verification_notes` | Yes for real entries | Date, source checked, and any useful audit notes |
 
 Example:
 
@@ -73,7 +111,9 @@ Example:
       "is_iced": true,
       "is_hot": true,
       "verification_status": "admin_verified",
-      "curation_notes": "Verified from their website menu, June 2026."
+      "verification_source": "official_menu",
+      "verification_url": "https://example.com/official-menu",
+      "verification_notes": "Verified from the cafe website menu, June 2026."
     }
   ]
 }
@@ -180,17 +220,46 @@ review counts never affect confidence. This keeps taste data trustworthy.
 | `"unverified"` | User-submitted; not yet reviewed |
 | `"community_reviewed"` | Future: enough community reviews to trust the entry |
 
+## How to fill the verified-drinks JSON
+
+Copy `data/curation/verified-drinks.example.json` to a real file (e.g.
+`data/curation/my-san-diego-drinks.json`). For each drink you have personally verified:
+
+| Field | Notes |
+|---|---|
+| `cafe_id` | From the curation checklist or `GET /cafes` output |
+| `name` | Exact name from the official menu (copy-paste, do not paraphrase) |
+| `price` | From the menu; leave `null` if unknown |
+| `milk_options` | List from the menu (e.g. `["whole", "oat", "almond"]`) |
+| `is_iced` / `is_hot` | What options the menu actually offers |
+| `verification_source` | `"official_menu"`, `"personal_visit"`, `"cafe_website"`, or `"user_submission"` |
+| `verification_url` | Paste the menu URL or leave `null` for in-person visit |
+| `verification_notes` | Date, what you saw, any notes |
+
+**Do not add a drink if you cannot cite a verification source.**
+
+## Production drink curation process
+
+See [docs/production-drink-curation.md](production-drink-curation.md) for the full
+production apply workflow. In summary:
+
+1. Generate curation checklist → verify 10–25 drinks offline → fill JSON file
+2. Dry-run: `manual_drink_curation.py --dry-run`
+3. Apply locally and verify via `GET /cafes/{id}/drinks`
+4. Future production apply: `manual_drink_curation.py --apply --production --confirm-production`
+5. Verify via production API: `GET https://2bd8jfknuc.../cafes/{id}/drinks`
+
+Do not bulk-upload guessed drinks. Start with 10–25 well-verified entries.
+
 ## Future production process
 
-Production curation is not automated in this phase. When ready:
+Production curation infrastructure is guarded by `--production --confirm-production`.
+Before applying:
 
 1. Complete and verify the local curation file.
-2. Run a full local validation (`pytest`, dry-run, apply, verify endpoints).
-3. Deploy the updated backend to AWS.
-4. Run the curation script against production DynamoDB with appropriate flags
-   (to be added in a future phase when production write safety is fully implemented).
-
-Do not run production writes until that tooling is in place.
+2. Run `pytest` and dry-run.
+3. Apply locally and verify endpoints.
+4. Apply to production only after local validation passes.
 
 ## What Yelp/Beli scraping is not used
 

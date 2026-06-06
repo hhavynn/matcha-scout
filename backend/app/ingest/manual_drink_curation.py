@@ -2,16 +2,22 @@
 Manual drink curation script for Matcha Scout.
 
 Reads a JSON curation file and creates admin-curated drinks under existing cafes.
-Always defaults to dry-run; requires --apply --local to write.
+Always defaults to dry-run. Local writes require --apply --local.
+Production writes require --apply --production --confirm-production.
 
 Usage:
     # Preview what would be created/skipped:
     python -m app.ingest.manual_drink_curation \\
         --file data/curation/san-diego-drinks.example.json --dry-run
 
-    # Write to local DynamoDB only:
+    # Write to local DynamoDB:
     python -m app.ingest.manual_drink_curation \\
         --file data/curation/my-san-diego-drinks.json --apply --local
+
+    # Write to production DynamoDB (host machine, AWS credentials):
+    python -m app.ingest.manual_drink_curation \\
+        --file data/curation/my-san-diego-drinks.json \\
+        --apply --production --confirm-production
 
 Rules:
     - source is always set to "admin_curated"
@@ -20,7 +26,7 @@ Rules:
     - Taste profiles start neutral (3.0 all dims, review_count=0, confidence=unrated)
     - Yelp excerpt counts NEVER affect confidence
     - Existing drinks are skipped unless --allow-overwrite is given
-    - Production writes are blocked; this script is local-only
+    - Production writes require an explicit confirmation flag and no local endpoint
 """
 from __future__ import annotations
 
@@ -91,6 +97,12 @@ def normalize_entry(entry: dict[str, Any]) -> dict[str, Any]:
     out.setdefault("is_iced", True)
     out.setdefault("is_hot", False)
     out.setdefault("verification_status", "admin_curated")
+    if out.get("verification_source"):
+        out["verification_source"] = str(out["verification_source"]).strip()
+    if out.get("verification_url"):
+        out["verification_url"] = str(out["verification_url"]).strip()
+    if out.get("verification_notes"):
+        out["verification_notes"] = str(out["verification_notes"]).strip()
     return out
 
 
@@ -199,6 +211,9 @@ def process_entry(
         "is_hot": entry["is_hot"],
         "source": "admin_curated",
         "verification_status": entry.get("verification_status", "admin_curated"),
+        "verification_source": entry.get("verification_source") or "",
+        "verification_url": entry.get("verification_url") or "",
+        "verification_notes": entry.get("verification_notes") or entry.get("curation_notes") or "",
         "submitted_at": now,
         "created_at": now,
     }
@@ -230,6 +245,14 @@ def parse_args() -> argparse.Namespace:
         help="Confirm this run targets local DynamoDB only (DYNAMODB_ENDPOINT_URL must be set).",
     )
     parser.add_argument(
+        "--production", action="store_true",
+        help="Confirm this run targets production DynamoDB (DYNAMODB_ENDPOINT_URL must be unset).",
+    )
+    parser.add_argument(
+        "--confirm-production", action="store_true",
+        help="Required with --apply --production to prevent accidental production writes.",
+    )
+    parser.add_argument(
         "--allow-overwrite", action="store_true",
         help="Re-create a drink even if one with the same name already exists at the cafe.",
     )
@@ -238,20 +261,40 @@ def parse_args() -> argparse.Namespace:
 
 def run(args: argparse.Namespace) -> int:
     applying = args.apply
+    local = getattr(args, "local", False)
+    production = getattr(args, "production", False)
+    confirm_production = getattr(args, "confirm_production", False)
 
-    # Guard: never write to production
+    if local and production:
+        print("ERROR: Choose only one target: --local or --production.", file=sys.stderr)
+        return 2
+
+    if local and not settings.dynamodb_endpoint_url:
+        print(
+            "ERROR: --local requires DYNAMODB_ENDPOINT_URL to be set.",
+            file=sys.stderr,
+        )
+        return 2
+
+    if production and settings.dynamodb_endpoint_url:
+        print(
+            "ERROR: --production refused because DYNAMODB_ENDPOINT_URL is set. "
+            "Unset it before targeting production DynamoDB.",
+            file=sys.stderr,
+        )
+        return 2
+
     if applying:
-        if not args.local:
+        if not local and not production:
             print(
-                "ERROR: --apply requires --local. Production curation writes are not supported.",
+                "ERROR: --apply requires either --local or --production.",
                 file=sys.stderr,
             )
             return 2
 
-        if not settings.dynamodb_endpoint_url:
+        if production and not confirm_production:
             print(
-                "ERROR: --apply refused — DYNAMODB_ENDPOINT_URL is not set. "
-                "This would target production DynamoDB. Run locally with Docker Compose.",
+                "ERROR: --apply --production requires --confirm-production.",
                 file=sys.stderr,
             )
             return 2

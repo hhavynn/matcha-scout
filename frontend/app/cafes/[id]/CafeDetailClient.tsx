@@ -181,8 +181,11 @@ export default function CafeDetailClient({ cafe, initialDrinks, cafeMap }: Props
           <p className="ms-serif" style={{ fontSize: 18, color: "#2a3124", margin: "0 0 6px" }}>
             Know their matcha?
           </p>
-          <p style={{ fontSize: 14, color: "#8c8a78", margin: "0 0 16px" }}>
-            Add the first drink and help others find their perfect pour.
+          <p style={{ fontSize: 14, color: "#8c8a78", margin: "0 0 4px" }}>
+            Add the first verified drink and help others find their perfect pour.
+          </p>
+          <p style={{ fontSize: 12.5, color: "#aaa794", margin: "0 0 16px" }}>
+            Only add drinks you&apos;ve personally seen on the menu or ordered yourself.
           </p>
           <button
             className="ms-btn ms-btn-primary ms-btn-sm"

@@ -1,7 +1,9 @@
-# Ignore personal/real curation files — only the example template is tracked.
+# Ignore personal/real curation files — only example templates are tracked.
 # JSON: all except *.example.json
 *.json
 !*.example.json
-# Local notes/checklists: *.local.md and my-*.md
+# Local notes/checklists
 *.local.md
+*.local.json
 my-*.md
+my-*.json

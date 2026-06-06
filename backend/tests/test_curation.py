@@ -159,6 +159,19 @@ def test_explicit_verification_status_preserved():
     assert result["verification_status"] == "admin_verified"
 
 
+def test_verification_metadata_normalized():
+    entry = {
+        **VALID_ENTRY,
+        "verification_source": " official_menu ",
+        "verification_url": " https://example.com/menu ",
+        "verification_notes": " Seen on menu. ",
+    }
+    result = normalize_entry(entry)
+    assert result["verification_source"] == "official_menu"
+    assert result["verification_url"] == "https://example.com/menu"
+    assert result["verification_notes"] == "Seen on menu."
+
+
 def test_normalize_does_not_mutate_input():
     entry = {**VALID_ENTRY, "milk_options": ["OAT"]}
     original_milk = list(entry["milk_options"])
@@ -291,6 +304,34 @@ def test_created_drink_has_correct_source_and_status(capsys):
     assert len(result.created) == 1
 
 
+def test_created_drink_preserves_verification_metadata(capsys):
+    result = CurationResult()
+    created_items = []
+    entry = {
+        **VALID_ENTRY,
+        "verification_source": "official_menu",
+        "verification_url": "https://example.com/menu",
+        "verification_notes": "Verified from official menu.",
+    }
+
+    with patch("app.ingest.manual_drink_curation.db") as mock_db:
+        mock_db.get_item.return_value = SAMPLE_CAFE
+        mock_db.find_existing_drink_for_cafe.return_value = None
+        mock_db.create_admin_curated_drink.side_effect = lambda cid, d: created_items.append(d) or d
+        process_entry(
+            entry, 1,
+            applying=True,
+            allow_overwrite=False,
+            now="2026-06-05T00:00:00Z",
+            result=result,
+        )
+
+    drink = created_items[0]
+    assert drink["verification_source"] == "official_menu"
+    assert drink["verification_url"] == "https://example.com/menu"
+    assert drink["verification_notes"] == "Verified from official menu."
+
+
 def test_created_drink_milk_normalized(capsys):
     result = CurationResult()
     created_items = []
@@ -393,3 +434,42 @@ def test_non_dict_entry_handled_gracefully():
 
     code = run(FakeArgs())
     assert code != 0  # non-zero because of invalid records
+
+
+def test_apply_requires_target_flag(tmp_path):
+    from app.ingest.manual_drink_curation import run
+
+    payload = {"version": 1, "drinks": []}
+    path = tmp_path / "drinks.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    class FakeArgs:
+        file = str(path)
+        apply = True
+        local = False
+        production = False
+        confirm_production = False
+        allow_overwrite = False
+        dry_run = False
+
+    assert run(FakeArgs()) == 2
+
+
+def test_production_apply_requires_confirm_flag(tmp_path, monkeypatch):
+    from app.ingest.manual_drink_curation import run
+
+    payload = {"version": 1, "drinks": []}
+    path = tmp_path / "drinks.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    class FakeArgs:
+        file = str(path)
+        apply = True
+        local = False
+        production = True
+        confirm_production = False
+        allow_overwrite = False
+        dry_run = False
+
+    monkeypatch.setattr("app.ingest.manual_drink_curation.settings.dynamodb_endpoint_url", None)
+    assert run(FakeArgs()) == 2
