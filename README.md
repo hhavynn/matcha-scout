@@ -77,7 +77,7 @@ Production Kubernetes is intentionally not used. Kubernetes manifests are local-
 - Confidence scoring: taste profiles are rated Unrated / Low / Medium / High based on Matcha Scout review count — never Yelp ratings. See [docs/user-submitted-drinks.md](docs/user-submitted-drinks.md).
 - Drink detail page with taste profile bars, confidence badge, review history, and review submission.
 - AI parsing flow for natural-language reviews into structured taste ratings.
-- Multi-region support: San Diego and Orange County with a region picker on /cafes and /quiz. See [docs/regions-and-location.md](docs/regions-and-location.md).
+- Multi-region support (production live): San Diego and Orange County with a region picker on /cafes and /quiz. Browser geolocation is intentionally deferred until real users exist — manual region selection is used. Production region filters are live; production SD/OC cafe ingestion is a separate future phase. See [docs/regions-and-location.md](docs/regions-and-location.md).
 - Local/admin ingestion for San Diego and Orange County via official Yelp Fusion API (multi-city OC search with deduplication).
 - Manual drink curation workflow: `data/curation/` JSON files + `python -m app.ingest.manual_drink_curation` for admin-verified drinks. See [docs/manual-drink-curation.md](docs/manual-drink-curation.md).
 - Fictional seed dataset with 5 cafes, 10 drinks, and baseline taste profiles.
