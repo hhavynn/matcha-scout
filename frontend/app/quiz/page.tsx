@@ -10,21 +10,27 @@ import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import LoadingState from "@/components/LoadingState";
 import { IconCheck, IconArrow } from "@/components/Icons";
+import RegionPicker from "@/components/RegionPicker";
 import { getRecommendations } from "@/lib/api";
-import type { RecommendationParams, RecommendationResult } from "@/lib/types";
+import type { RecommendationParams, RecommendationResult, RegionKey } from "@/lib/types";
 
 export default function QuizPage() {
   const [results, setResults] = useState<RecommendationResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastParams, setLastParams] = useState<RecommendationParams | null>(null);
+  const [region, setRegion] = useState<RegionKey>("all");
 
   async function handleSubmit(params: RecommendationParams) {
     setLoading(true);
     setError(null);
-    setLastParams(params);
+    const paramsWithRegion: RecommendationParams = {
+      ...params,
+      region_key: region !== "all" ? region : undefined,
+    };
+    setLastParams(paramsWithRegion);
     try {
-      const data = await getRecommendations(params);
+      const data = await getRecommendations(paramsWithRegion);
       setResults(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load recommendations.");
@@ -36,14 +42,20 @@ export default function QuizPage() {
   return (
     <div style={{ maxWidth: 1140, margin: "0 auto", padding: "30px 20px 56px" }}>
       {/* Header */}
-      <div className="mb-8">
-        <span className="ms-eyebrow">Your tasting profile</span>
-        <h1 className="ms-display" style={{ fontSize: "clamp(26px, 5vw, 36px)", margin: "8px 0 4px", color: "#2a3124" }}>
-          Find your matcha match
-        </h1>
-        <p style={{ fontSize: 14.5, color: "#585e4d" }}>
-          Answer five quick taste questions and we&apos;ll rank every drink against your preferences.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+        <div>
+          <span className="ms-eyebrow">Your tasting profile</span>
+          <h1 className="ms-display" style={{ fontSize: "clamp(26px, 5vw, 36px)", margin: "8px 0 4px", color: "#2a3124" }}>
+            Find your matcha match
+          </h1>
+          <p style={{ fontSize: 14.5, color: "#585e4d" }}>
+            Answer five quick taste questions and we&apos;ll rank every drink against your preferences.
+          </p>
+        </div>
+        <div className="flex flex-col gap-1.5 items-end">
+          <span style={{ fontSize: 11.5, color: "#8c8a78", fontWeight: 600 }}>Region</span>
+          <RegionPicker value={region} onChange={setRegion} />
+        </div>
       </div>
 
       <div

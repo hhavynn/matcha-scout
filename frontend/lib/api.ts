@@ -40,8 +40,9 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function getCafes(): Promise<Cafe[]> {
-  return apiFetch<Cafe[]>("/cafes");
+export async function getCafes(regionKey?: string): Promise<Cafe[]> {
+  const qs = regionKey ? `?region_key=${encodeURIComponent(regionKey)}` : "";
+  return apiFetch<Cafe[]>(`/cafes${qs}`);
 }
 
 export async function getCafe(id: string): Promise<Cafe> {
@@ -106,5 +107,6 @@ export async function getRecommendations(
   if (params.price_max != null) qs.set("price_max", String(params.price_max));
   if (params.milk_type) qs.set("milk_type", params.milk_type);
   if (params.limit != null) qs.set("limit", String(params.limit));
+  if (params.region_key) qs.set("region_key", params.region_key);
   return apiFetch<RecommendationResult[]>(`/recommendations?${qs.toString()}`);
 }

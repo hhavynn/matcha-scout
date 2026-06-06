@@ -17,6 +17,7 @@ def get_recommendations(
     price_max: Optional[float] = Query(default=None, gt=0),
     milk_type: Optional[str] = Query(default=None),
     limit: int = Query(default=10, ge=1, le=50),
+    region_key: Optional[str] = Query(default=None),
 ):
     prefs = RecommendationRequest(
         matcha_strength=matcha_strength,
@@ -31,5 +32,15 @@ def get_recommendations(
 
     drinks_with_profiles = db.get_all_drinks_with_profiles()
     cafes_by_id = db.get_all_cafes_by_id()
+
+    if region_key:
+        region_cafe_ids = {
+            cid for cid, cafe in cafes_by_id.items()
+            if cafe.get("region_key") == region_key
+        }
+        drinks_with_profiles = [
+            d for d in drinks_with_profiles
+            if d["cafe_id"] in region_cafe_ids
+        ]
 
     return rank_drinks(prefs, drinks_with_profiles, cafes_by_id)

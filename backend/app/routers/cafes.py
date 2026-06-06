@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from app.services import db
 from app.models.cafe import Cafe, ExternalReviewExcerpt
 from app.models.drink import Drink, DrinkCreate
@@ -34,6 +34,8 @@ def _item_to_cafe(item: dict) -> Cafe:
         phone=item.get("phone"),
         price=item.get("price"),
         last_ingested_at=item.get("last_ingested_at"),
+        region_key=item.get("region_key"),
+        region_label=item.get("region_label"),
     )
 
 
@@ -52,8 +54,10 @@ def _item_to_external_review(item: dict) -> ExternalReviewExcerpt:
 
 
 @router.get("", response_model=list[Cafe])
-def list_cafes():
+def list_cafes(region_key: Optional[str] = Query(default=None)):
     items = db.scan_by_entity_type("CAFE")
+    if region_key:
+        items = [i for i in items if i.get("region_key") == region_key]
     return [_item_to_cafe(item) for item in items]
 
 
