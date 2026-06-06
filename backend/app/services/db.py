@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError

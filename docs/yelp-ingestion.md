@@ -133,6 +133,19 @@ SK = REVIEW#...
 
 Only Matcha Scout user reviews contribute to drink taste profiles.
 
+## High-Coverage Production Ingestion
+
+For bulk production ingestion of 100–150+ cafes per region, see
+[docs/production-yelp-ingestion.md](production-yelp-ingestion.md) for:
+- API call math and staying under the 5,000-call trial limit
+- Why reviews are skipped during bulk ingestion
+- Production write flags: `--apply --production --confirm-production`
+- Dry-run → apply → verify workflow
+- Troubleshooting 429 rate limits
+
+The key guardrail is `--max-api-calls` (default 200). For production runs,
+use 500 per region, leaving ~4,000 calls unused per month.
+
 ## Orange County Ingestion
 
 Orange County uses a multi-city search strategy to get broad coverage.

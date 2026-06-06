@@ -1,42 +1,48 @@
 """
-Generic Yelp Fusion API ingestion script for Matcha Scout.
+Yelp Fusion API ingestion script for Matcha Scout — high-coverage edition.
 
-Supports San Diego and Orange County. For Orange County, automatically
-searches across multiple cities and deduplicates by Yelp business ID.
+Supports San Diego and Orange County with:
+- Production write guards (--apply --production --confirm-production)
+- Multi-term, multi-location sweeps with deduplication
+- Hard API call cap (--max-api-calls) to protect the Yelp trial limit
+- Pagination up to 50 businesses per call
+- No review excerpts by default (--include-reviews must be explicit)
+- Detailed summary of calls used, cafes found, and duplicates skipped
 
-Usage:
-    # San Diego dry-run
+Usage — local:
+    # Dry-run (no writes, no real Yelp calls needed — actually does call Yelp for the list)
     python -m app.ingest.yelp_region_ingestion \\
-        --region san-diego --limit 20 --include-reviews --dry-run
+        --region san-diego --target-per-region 20 \\
+        --no-reviews --dry-run --request-delay 0.6
 
-    # Orange County dry-run (multi-city search)
+    # Apply locally
     python -m app.ingest.yelp_region_ingestion \\
-        --region orange-county --limit 20 --include-reviews --dry-run \\
+        --region orange-county --term-set matcha-discovery \\
+        --target-per-region 150 --max-api-calls 500 \\
+        --no-reviews --apply --local --request-delay 0.6
+
+Usage — production:
+    # Production apply (all three flags required)
+    python -m app.ingest.yelp_region_ingestion \\
+        --region san-diego --term-set matcha-discovery \\
+        --target-per-region 150 --max-api-calls 500 \\
+        --no-reviews --apply --production --confirm-production \\
         --request-delay 0.6
-
-    # Apply Orange County locally
-    python -m app.ingest.yelp_region_ingestion \\
-        --region orange-county --limit 20 --include-reviews \\
-        --apply --local --request-delay 0.6
-
-    # Override location (single city)
-    python -m app.ingest.yelp_region_ingestion \\
-        --region orange-county --location "Irvine, CA" \\
-        --limit 10 --include-reviews --dry-run
 """
 from __future__ import annotations
 
 import argparse
 import sys
 import time
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
 
 from app.core.config import settings
 from app.services import db
 from app.services.regions import (
-    OC_DEFAULT_LOCATIONS,
-    SD_DEFAULT_LOCATION,
+    get_discovery_locations,
+    get_term_set,
     normalize_region,
 )
 from app.services.yelp_client import (
@@ -48,149 +54,263 @@ from app.services.yelp_client import (
     search_businesses,
 )
 
-# Per-city search cap to avoid wasting API quota on a single city.
-_PER_CITY_CAP = 10
+# Yelp Fusion returns max 50 businesses per search call.
+YELP_MAX_PER_REQUEST = 50
 
+
+# ── Call counter ──────────────────────────────────────────────────────────────
+
+@dataclass
+class CallCounter:
+    max_calls: int
+    used: int = 0
+    search_calls: int = 0
+    review_calls: int = 0
+
+    def can_make_call(self) -> bool:
+        return self.used < self.max_calls
+
+    def record_search(self) -> None:
+        self.used += 1
+        self.search_calls += 1
+
+    def record_review(self) -> None:
+        self.used += 1
+        self.review_calls += 1
+
+    def remaining(self) -> int:
+        return max(0, self.max_calls - self.used)
+
+    def summary(self) -> str:
+        return (
+            f"API calls used: {self.used}/{self.max_calls} "
+            f"(search={self.search_calls}, review={self.review_calls}, "
+            f"remaining={self.remaining()})"
+        )
+
+
+# ── Multi-term deduplication sweep ───────────────────────────────────────────
+
+def sweep_businesses(
+    terms: list[str],
+    locations: list[str],
+    target: int,
+    counter: CallCounter,
+    request_delay: float,
+) -> tuple[list[dict], int]:
+    """
+    Search across all (term, location) combinations, paginating as needed.
+
+    Returns:
+        (unique_businesses, duplicates_skipped)
+
+    Stops when:
+        - target unique businesses reached
+        - max_api_calls reached
+        - all combos exhausted
+    """
+    seen_ids: set[str] = set()
+    unique: list[dict] = []
+    duplicates_skipped = 0
+
+    for term in terms:
+        if len(unique) >= target or not counter.can_make_call():
+            break
+        for location in locations:
+            if len(unique) >= target or not counter.can_make_call():
+                break
+
+            offset = 0
+            while len(unique) < target and counter.can_make_call():
+                per_call = min(YELP_MAX_PER_REQUEST, target - len(unique))
+
+                try:
+                    counter.record_search()
+                    results = search_businesses(term, location, per_call, offset)
+                except YelpApiError as exc:
+                    print(f"  Warning [{term!r}/{location!r} offset={offset}]: {exc}", file=sys.stderr)
+                    break
+
+                if not results:
+                    break  # No more results for this combo
+
+                new_this_page = 0
+                for biz in results:
+                    if biz["id"] not in seen_ids:
+                        seen_ids.add(biz["id"])
+                        unique.append(biz)
+                        new_this_page += 1
+                        if len(unique) >= target:
+                            break
+                    else:
+                        duplicates_skipped += 1
+
+                if len(results) < per_call:
+                    break  # Yelp returned fewer than requested — no more pages
+
+                offset += len(results)
+                time.sleep(request_delay)
+
+            time.sleep(request_delay)  # Brief pause between location combos
+
+    return unique, duplicates_skipped
+
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Ingest real cafe metadata from the official Yelp Fusion API into local DynamoDB."
+        description=(
+            "High-coverage Yelp Fusion API ingestion for Matcha Scout. "
+            "Requires explicit --local OR --production --confirm-production to write."
+        )
     )
     parser.add_argument(
         "--region", required=True,
         choices=["san-diego", "orange-county"],
-        help="Region to ingest. Determines default search location(s) and tags cafes.",
+        help="Region to ingest.",
     )
     parser.add_argument("--location", default=None,
-        help="Override the default search location (single city/area). "
-             "For orange-county without this flag, searches multiple OC cities.")
-    parser.add_argument("--term", default=settings.yelp_default_term)
-    parser.add_argument("--limit", type=int, default=20,
-        help="Max unique cafes to return/apply (after deduplication).")
-    parser.add_argument("--offset", type=int, default=0,
-        help="Offset for single-location searches only.")
+        help="Override: use a single custom location instead of the region defaults.")
+    parser.add_argument("--term", default=None,
+        help="Single search term. Overrides --term-set.")
+    parser.add_argument("--term-set", default="matcha",
+        choices=["matcha", "matcha-discovery"],
+        help="Named search term set to use. 'matcha-discovery' uses 6 terms for broader coverage.")
+    parser.add_argument("--target-per-region", "--limit", dest="target", type=int, default=20,
+        help="Max unique cafes to collect per region (default: 20).")
+    parser.add_argument("--max-api-calls", type=int, default=200,
+        help="Hard limit on Yelp API calls for this run (default: 200). "
+             "Protects against exceeding the 5,000-call monthly trial limit.")
+    parser.add_argument("--high-coverage", action="store_true",
+        help="Use the extended city list for the region instead of defaults.")
+    parser.add_argument("--no-reviews", action="store_true",
+        help="Do NOT fetch Yelp review excerpts (recommended for bulk ingestion).")
     parser.add_argument("--include-reviews", action="store_true",
-        help="Fetch up to 3 Yelp review excerpts per cafe.")
-    parser.add_argument("--dry-run", action="store_true",
-        help="Preview only. Default when --apply is not given.")
-    parser.add_argument("--apply", action="store_true",
-        help="Write to local DynamoDB. Requires --local.")
-    parser.add_argument("--local", action="store_true",
-        help="Confirm this run targets local DynamoDB only.")
+        help="Fetch up to 3 Yelp review excerpts per cafe (uses extra API calls).")
+    parser.add_argument("--request-delay", type=float, default=0.6,
+        help="Seconds between Yelp API calls (default: 0.6 to respect rate limits).")
     parser.add_argument("--no-overwrite", action="store_true",
-        help="Preserve existing user-owned fields when refreshing Yelp metadata.")
-    parser.add_argument("--request-delay", type=float, default=0.5,
-        help="Seconds between Yelp API calls to respect per-second rate limits (default: 0.5).")
+        help="Preserve existing user-owned fields when updating existing cafe records.")
+    parser.add_argument("--dry-run", action="store_true",
+        help="Preview only — no database writes. Default when --apply is not given.")
+
+    # Write mode: mutually exclusive local vs production
+    write_group = parser.add_argument_group("Write mode (choose exactly one with --apply)")
+    write_group.add_argument("--apply", action="store_true",
+        help="Write to the database (requires --local or --production --confirm-production).")
+    write_group.add_argument("--local", action="store_true",
+        help="Write to local DynamoDB (Docker Compose). DYNAMODB_ENDPOINT_URL must be set.")
+    write_group.add_argument("--production", action="store_true",
+        help="Write to production DynamoDB (matcha_scout_prod). "
+             "Requires --confirm-production to prevent accidents.")
+    write_group.add_argument("--confirm-production", action="store_true",
+        help="Explicit confirmation that you intend to write to production.")
+
     return parser.parse_args()
 
 
-def _search_locations_for_region(region: str, location_override: Optional[str]) -> list[str]:
-    """Return the ordered list of Yelp search locations for a region."""
-    if location_override:
-        return [location_override]
-    if region == "san-diego":
-        return [SD_DEFAULT_LOCATION]
-    if region == "orange-county":
-        return OC_DEFAULT_LOCATIONS
-    return [location_override or "San Diego, CA"]
+def _validate_write_mode(args: argparse.Namespace) -> tuple[bool, str]:
+    """
+    Validate write flags. Returns (is_production, error_message_or_empty).
+    """
+    if not args.apply:
+        return False, ""
 
+    if args.local and args.production:
+        return False, "--local and --production are mutually exclusive."
 
-def fetch_unique_businesses(
-    term: str,
-    locations: list[str],
-    limit: int,
-    offset: int,
-    request_delay: float,
-) -> list[dict]:
-    """Search across locations, deduplicate by Yelp business id, return up to limit results."""
-    seen_ids: set[str] = set()
-    unique: list[dict] = []
+    if args.local:
+        if not settings.dynamodb_endpoint_url:
+            return False, (
+                "--apply --local requires DYNAMODB_ENDPOINT_URL to be set. "
+                "Is Docker Compose running?"
+            )
+        return False, ""  # local write, no error
 
-    # For a single location, use the full limit. For multi-city, cap per city so
-    # no one city monopolizes the result set.
-    per_city = limit if len(locations) == 1 else max(1, min(_PER_CITY_CAP, limit))
+    if args.production:
+        if not args.confirm_production:
+            return True, (
+                "--apply --production requires --confirm-production. "
+                "This prevents accidental production writes."
+            )
+        return True, ""  # production write confirmed, no error
 
-    for location in locations:
-        if len(unique) >= limit:
-            break
-        try:
-            results = search_businesses(term, location, per_city, offset if len(locations) == 1 else 0)
-        except YelpApiError as exc:
-            print(f"  Warning: Yelp API error for {location!r}: {exc}", file=sys.stderr)
-            continue
-
-        new_count = 0
-        for biz in results:
-            if biz["id"] not in seen_ids:
-                seen_ids.add(biz["id"])
-                unique.append(biz)
-                new_count += 1
-                if len(unique) >= limit:
-                    break
-
-        if len(locations) > 1:
-            print(f"  Searched {location!r}: {len(results)} results, {new_count} new unique")
-            time.sleep(request_delay)
-
-    return unique[:limit]
-
-
-def _print_preview(cafe: dict, review_count: int) -> None:
-    print(
-        f"- {cafe['name']} [{cafe['cafe_id']}] "
-        f"region={cafe.get('region_key', 'n/a')} "
-        f"rating={cafe.get('rating', 'n/a')} reviews={cafe.get('review_count', 'n/a')} "
-        f"external_excerpts={review_count}"
+    # --apply without --local or --production
+    return False, (
+        "--apply requires either --local (Docker Compose) or "
+        "--production --confirm-production (production DynamoDB)."
     )
-    if cafe.get("address"):
-        print(f"  {cafe['address']}")
-    if cafe.get("external_url"):
-        print(f"  Yelp: {cafe['external_url']}")
 
 
 def run(args: argparse.Namespace) -> int:
     applying = args.apply
-    if applying and not args.local:
-        print(
-            "ERROR: --apply requires --local. Production ingestion is not supported.",
-            file=sys.stderr,
-        )
+
+    # Validate write mode
+    is_production, write_error = _validate_write_mode(args)
+    if write_error:
+        print(f"ERROR: {write_error}", file=sys.stderr)
         return 2
 
-    if applying and not settings.dynamodb_endpoint_url:
-        print(
-            "ERROR: --apply refused — DYNAMODB_ENDPOINT_URL not set. "
-            "Run with Docker Compose (local mode only).",
-            file=sys.stderr,
-        )
-        return 2
+    # Determine terms
+    if args.term:
+        terms = [args.term]
+    else:
+        try:
+            terms = get_term_set(args.term_set)
+        except ValueError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 2
+
+    # Determine locations
+    if args.location:
+        locations = [args.location]
+    else:
+        locations = get_discovery_locations(args.region, high_coverage=args.high_coverage)
+
+    # Reviews mode
+    fetch_reviews = args.include_reviews and not args.no_reviews
 
     region_key, region_label = normalize_region(args.region)
-    locations = _search_locations_for_region(args.region, args.location)
-    mode = "APPLY" if applying else "DRY RUN"
-
-    print(
-        f"{mode}: region={region_key!r} ({region_label}) "
-        f"term={args.term!r} limit={args.limit} "
-        f"locations={locations if len(locations) <= 3 else f'{len(locations)} cities'}"
-    )
-
+    counter = CallCounter(max_calls=args.max_api_calls)
     ingested_at = datetime.now(timezone.utc).isoformat()
 
-    if len(locations) > 1:
-        print(f"  Multi-city search across {len(locations)} locations:")
-    businesses = fetch_unique_businesses(
-        args.term, locations, args.limit, args.offset, args.request_delay
+    # ── Mode banner ───────────────────────────────────────────────────────────
+    mode = "APPLY (PRODUCTION)" if is_production else ("APPLY (LOCAL)" if applying else "DRY RUN")
+    print(f"\n{'='*64}")
+    print(f"{mode}: {region_label}")
+    print(f"{'='*64}")
+    print(f"  Terms ({len(terms)}): {terms}")
+    print(f"  Locations ({len(locations)}): {locations if len(locations) <= 4 else f'{len(locations)} cities'}")
+    print(f"  Target: {args.target} unique cafes")
+    print(f"  Max API calls: {args.max_api_calls}")
+    print(f"  Fetch reviews: {fetch_reviews}")
+    print(f"  Reviews note: Yelp review excerpts are stored separately; they do NOT")
+    print(f"                affect Matcha Scout taste-profile confidence scores.")
+    print()
+
+    if is_production:
+        print("  ⚠️  PRODUCTION WRITE — will write to matcha_scout_prod DynamoDB")
+        print()
+
+    # ── Sweep ────────────────────────────────────────────────────────────────
+    businesses, duplicates_skipped = sweep_businesses(
+        terms, locations, args.target, counter, args.request_delay
     )
 
     if not businesses:
-        print("No Yelp businesses returned.")
-        if not applying:
-            print("\nDry run only. Re-run with --apply --local to write to local DynamoDB.")
+        print("No Yelp businesses found matching search criteria.")
+        print(f"  {counter.summary()}")
         return 0
 
     print(f"  Unique businesses found: {len(businesses)}")
+    print(f"  Duplicates skipped across term/location combos: {duplicates_skipped}")
     print()
+
+    # ── Per-business processing ───────────────────────────────────────────────
+    created_count = 0
+    updated_count = 0
+    failed_count = 0
 
     for business in businesses:
         cafe = normalize_yelp_business(
@@ -198,14 +318,14 @@ def run(args: argparse.Namespace) -> int:
             location_label=locations[0] if len(locations) == 1 else region_label,
             ingested_at=ingested_at,
         )
-        # Tag with region
         cafe["region_key"] = region_key
         cafe["region_label"] = region_label
 
         reviews = []
-        if args.include_reviews:
+        if fetch_reviews and counter.can_make_call():
             time.sleep(args.request_delay)
             try:
+                counter.record_review()
                 reviews = [
                     normalize_yelp_review_excerpt(review, index=i, ingested_at=ingested_at)
                     for i, review in enumerate(get_business_reviews(business["id"]))
@@ -213,16 +333,45 @@ def run(args: argparse.Namespace) -> int:
             except YelpApiError as exc:
                 print(f"  Warning: could not fetch reviews for {cafe['name']!r}: {exc}", file=sys.stderr)
 
+        # Preview (show top 20 in dry-run, all in apply mode)
         _print_preview(cafe, len(reviews))
 
         if applying:
-            saved = db.upsert_cafe_from_external_source(cafe, no_overwrite=args.no_overwrite)
-            for review in reviews:
-                db.put_external_review_excerpt(saved["cafe_id"], review)
+            try:
+                existing = db.get_item(pk=f"CAFE#{cafe['cafe_id']}", sk="METADATA")
+                saved = db.upsert_cafe_from_external_source(cafe, no_overwrite=args.no_overwrite)
+                if existing:
+                    updated_count += 1
+                else:
+                    created_count += 1
+                for review in reviews:
+                    db.put_external_review_excerpt(saved["cafe_id"], review)
+            except Exception as exc:
+                print(f"  ERROR writing {cafe.get('name')!r}: {exc}", file=sys.stderr)
+                failed_count += 1
+
+    # ── Summary ───────────────────────────────────────────────────────────────
+    print()
+    print(f"── Summary: {region_label} ──")
+    print(f"  Unique businesses: {len(businesses)}")
+    if applying:
+        print(f"  Created: {created_count}")
+        print(f"  Updated: {updated_count}")
+        print(f"  Failed:  {failed_count}")
+    else:
+        print(f"  (Dry run — no writes)")
+    print(f"  Duplicates skipped: {duplicates_skipped}")
+    print(f"  {counter.summary()}")
 
     if not applying:
-        print("\nDry run only. Re-run with --apply --local to write to local DynamoDB.")
-    return 0
+        print()
+        print("Dry run complete. Re-run with:")
+        if is_production or (args.production if hasattr(args, 'production') else False):
+            print("  --apply --production --confirm-production")
+        else:
+            print("  --apply --local")
+
+    return 0 if failed_count == 0 else 1
 
 
 def main() -> None:
@@ -235,6 +384,18 @@ def main() -> None:
     except YelpApiError as exc:
         print(f"Yelp API error: {exc}", file=sys.stderr)
         raise SystemExit(1)
+
+
+def _print_preview(cafe: dict, review_count: int) -> None:
+    cats = cafe.get("categories") or []
+    cat_str = ", ".join(cats[:3]) if cats else "n/a"
+    print(
+        f"  • {cafe['name']} | {cafe.get('location', '?')} | "
+        f"★{cafe.get('rating', '?')} ({cafe.get('review_count', '?')} reviews) | "
+        f"[{cat_str}]"
+    )
+    if cafe.get("address"):
+        print(f"    {cafe['address']}")
 
 
 if __name__ == "__main__":
