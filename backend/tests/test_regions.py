@@ -78,7 +78,7 @@ def _make_biz(yelp_id: str, name: str, city: str = "Irvine") -> dict:
 
 
 def test_dedup_removes_duplicates_across_cities():
-    from app.ingest.yelp_region_ingestion import fetch_unique_businesses
+    from app.ingest.yelp_region_ingestion import sweep_businesses, CallCounter
 
     city_a_results = [_make_biz("biz-1", "Matcha A"), _make_biz("biz-2", "Matcha B")]
     city_b_results = [_make_biz("biz-2", "Matcha B"), _make_biz("biz-3", "Matcha C")]
@@ -89,9 +89,10 @@ def test_dedup_removes_duplicates_across_cities():
         call_count[0] += 1
         return result
 
+    counter = CallCounter(max_calls=50)
     with patch("app.ingest.yelp_region_ingestion.search_businesses", side_effect=fake_search):
         with patch("app.ingest.yelp_region_ingestion.time.sleep"):
-            results = fetch_unique_businesses("matcha", ["Irvine, CA", "Anaheim, CA"], 10, 0, 0.1)
+            results, _ = sweep_businesses(["matcha"], ["Irvine, CA", "Anaheim, CA"], 10, counter, 0.1)
 
     ids = [b["id"] for b in results]
     assert ids == ["biz-1", "biz-2", "biz-3"]
@@ -99,15 +100,40 @@ def test_dedup_removes_duplicates_across_cities():
 
 
 def test_dedup_respects_limit():
-    from app.ingest.yelp_region_ingestion import fetch_unique_businesses
+    from app.ingest.yelp_region_ingestion import sweep_businesses, CallCounter
 
     many_results = [_make_biz(f"biz-{i}", f"Cafe {i}") for i in range(20)]
 
+    counter = CallCounter(max_calls=50)
     with patch("app.ingest.yelp_region_ingestion.search_businesses", return_value=many_results):
         with patch("app.ingest.yelp_region_ingestion.time.sleep"):
-            results = fetch_unique_businesses("matcha", ["Irvine, CA"], 5, 0, 0.1)
+            results, _ = sweep_businesses(["matcha"], ["Irvine, CA"], 5, counter, 0.1)
 
     assert len(results) == 5
+
+
+def _make_full_args(**overrides):
+    """Create a FakeArgs object compatible with the new run() signature."""
+    class FakeArgs:
+        region = "orange-county"
+        location = "Irvine, CA"
+        term = "matcha"
+        term_set = "matcha"
+        target = 5
+        max_api_calls = 20
+        high_coverage = False
+        no_reviews = True
+        include_reviews = False
+        dry_run = True
+        apply = False
+        local = False
+        production = False
+        confirm_production = False
+        no_overwrite = False
+        request_delay = 0.0
+    for k, v in overrides.items():
+        setattr(FakeArgs, k, v)
+    return FakeArgs()
 
 
 def test_oc_dry_run_does_not_write():
@@ -115,24 +141,12 @@ def test_oc_dry_run_does_not_write():
     from app.ingest.yelp_region_ingestion import run
 
     fake_biz = _make_biz("biz-oc-1", "OC Matcha")
-
-    class FakeArgs:
-        region = "orange-county"
-        location = "Irvine, CA"
-        term = "matcha"
-        limit = 5
-        offset = 0
-        include_reviews = False
-        dry_run = True
-        apply = False
-        local = False
-        no_overwrite = False
-        request_delay = 0.0
+    args = _make_full_args(dry_run=True, apply=False)
 
     with patch("app.ingest.yelp_region_ingestion.search_businesses", return_value=[fake_biz]):
         with patch("app.ingest.yelp_region_ingestion.db") as mock_db:
             with patch("app.ingest.yelp_region_ingestion.time.sleep"):
-                code = run(FakeArgs())
+                code = run(args)
 
     mock_db.upsert_cafe_from_external_source.assert_not_called()
     assert code == 0
@@ -144,19 +158,7 @@ def test_ingestion_tags_region_key():
 
     fake_biz = _make_biz("biz-sd-1", "SD Matcha Spot")
     captured = []
-
-    class FakeArgs:
-        region = "san-diego"
-        location = "San Diego, CA"
-        term = "matcha"
-        limit = 5
-        offset = 0
-        include_reviews = False
-        dry_run = False
-        apply = True
-        local = True
-        no_overwrite = False
-        request_delay = 0.0
+    args = _make_full_args(region="san-diego", dry_run=False, apply=True, local=True)
 
     def fake_upsert(cafe, no_overwrite=False):
         captured.append(cafe)
@@ -166,10 +168,10 @@ def test_ingestion_tags_region_key():
         with patch("app.ingest.yelp_region_ingestion.db") as mock_db:
             with patch("app.ingest.yelp_region_ingestion.settings") as mock_settings:
                 mock_settings.dynamodb_endpoint_url = "http://localhost:8001"
-                mock_settings.yelp_default_term = "matcha"
+                mock_db.get_item.return_value = None
                 mock_db.upsert_cafe_from_external_source.side_effect = fake_upsert
                 with patch("app.ingest.yelp_region_ingestion.time.sleep"):
-                    run(FakeArgs())
+                    run(args)
 
     assert len(captured) == 1
     assert captured[0]["region_key"] == "san-diego"
@@ -182,19 +184,7 @@ def test_oc_ingestion_tags_orange_county():
 
     fake_biz = _make_biz("biz-oc-tag", "OC Matcha Spot", city="Irvine")
     captured = []
-
-    class FakeArgs:
-        region = "orange-county"
-        location = "Irvine, CA"
-        term = "matcha"
-        limit = 5
-        offset = 0
-        include_reviews = False
-        dry_run = False
-        apply = True
-        local = True
-        no_overwrite = False
-        request_delay = 0.0
+    args = _make_full_args(region="orange-county", dry_run=False, apply=True, local=True)
 
     def fake_upsert(cafe, no_overwrite=False):
         captured.append(cafe)
@@ -204,10 +194,10 @@ def test_oc_ingestion_tags_orange_county():
         with patch("app.ingest.yelp_region_ingestion.db") as mock_db:
             with patch("app.ingest.yelp_region_ingestion.settings") as mock_settings:
                 mock_settings.dynamodb_endpoint_url = "http://localhost:8001"
-                mock_settings.yelp_default_term = "matcha"
+                mock_db.get_item.return_value = None
                 mock_db.upsert_cafe_from_external_source.side_effect = fake_upsert
                 with patch("app.ingest.yelp_region_ingestion.time.sleep"):
-                    run(FakeArgs())
+                    run(args)
 
     assert captured[0]["region_key"] == "orange-county"
     assert captured[0]["region_label"] == "Orange County"
