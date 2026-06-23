@@ -9,8 +9,8 @@ Use this checklist before sharing Matcha Scout for review collection.
 - Drinks: https://matcha-scout.vercel.app/drinks
 - Cafes: https://matcha-scout.vercel.app/cafes
 - Quiz: https://matcha-scout.vercel.app/quiz
-- API health: https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com/health
-- Review targets API: https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com/drinks/review-targets
+- API health: https://matcha-scout-api.vercel.app/health
+- Review targets API: https://matcha-scout-api.vercel.app/drinks/review-targets
 
 ## Browser And Device Checks
 
@@ -53,7 +53,7 @@ Do not create fake reviews during QA unless you intentionally coordinate a real 
 - Browser console has no uncaught runtime errors.
 - `curl -I https://matcha-scout.vercel.app/review` returns 200.
 - `curl -I https://matcha-scout.vercel.app/` returns 200.
-- `curl https://2bd8jfknuc.execute-api.us-west-2.amazonaws.com/drinks/review-targets` returns JSON.
+- `curl https://matcha-scout-api.vercel.app/drinks/review-targets` returns JSON.
 
 ## What To Screenshot
 
