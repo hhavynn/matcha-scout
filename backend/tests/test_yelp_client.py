@@ -110,12 +110,7 @@ def test_dry_run_does_not_write_to_db(monkeypatch, capsys):
 
 def test_put_external_review_excerpt_uses_external_review_key(monkeypatch):
     writes = []
-
-    class FakeTable:
-        def put_item(self, Item):
-            writes.append(Item)
-
-    monkeypatch.setattr(db, "get_table", lambda: FakeTable())
+    monkeypatch.setattr(db, "put_item", lambda item: writes.append(item))
     db.put_external_review_excerpt(
         "cafe-123",
         {
@@ -144,12 +139,8 @@ def test_upsert_preserves_user_owned_fields_with_no_overwrite(monkeypatch):
     }
     writes = []
 
-    class FakeTable:
-        def put_item(self, Item):
-            writes.append(Item)
-
     monkeypatch.setattr(db, "get_cafe_by_external_source", lambda source, external_id: existing)
-    monkeypatch.setattr(db, "get_table", lambda: FakeTable())
+    monkeypatch.setattr(db, "put_item", lambda item: writes.append(item))
 
     db.upsert_cafe_from_external_source(
         {
@@ -168,28 +159,24 @@ def test_upsert_preserves_user_owned_fields_with_no_overwrite(monkeypatch):
     assert writes[0]["rating"] == Decimal("4.5")
 
 
-def test_taste_profile_aggregation_queries_only_matcha_scout_review_items(monkeypatch):
+def test_taste_profile_aggregation_reads_only_matcha_scout_review_items(monkeypatch):
     from app.services import aggregator
 
-    captured = {}
-
-    class FakeTable:
-        def query(self, KeyConditionExpression):
-            captured["expression"] = KeyConditionExpression
-            return {"Items": []}
-
-        def put_item(self, Item):
-            raise AssertionError("no taste profile should be written when no Matcha Scout reviews are returned")
-
-    monkeypatch.setattr(db, "get_table", lambda: FakeTable())
+    calls = []
+    monkeypatch.setattr(db, "using_postgres", lambda: True)
+    monkeypatch.setattr(
+        db,
+        "list_reviews_for_drink",
+        lambda drink_id: calls.append(drink_id) or [],
+    )
+    monkeypatch.setattr(
+        db,
+        "put_item",
+        lambda item: (_ for _ in ()).throw(
+            AssertionError("no taste profile should be written when no Matcha Scout reviews are returned")
+        ),
+    )
 
     aggregator.recalculate_taste_profile("drink-123")
 
-    expression_parts = captured["expression"].get_expression()["values"]
-    pk_expression = expression_parts[0].get_expression()
-    sk_expression = expression_parts[1].get_expression()
-
-    assert pk_expression["values"][0].name == "PK"
-    assert pk_expression["values"][1] == "DRINK#drink-123"
-    assert sk_expression["values"][0].name == "SK"
-    assert sk_expression["values"][1] == "REVIEW#"
+    assert calls == ["drink-123"]

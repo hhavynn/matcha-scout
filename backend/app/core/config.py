@@ -3,6 +3,13 @@ from typing import Optional
 
 
 class Settings:
+    # PostgreSQL / Neon:
+    #   When DATABASE_URL is set, PostgreSQL becomes the active persistence
+    #   backend. Use Neon's pooled connection string for serverless runtimes.
+    database_url: Optional[str] = os.getenv("DATABASE_URL") or None
+    database_table_name: str = os.getenv("DATABASE_TABLE_NAME", "matcha_items")
+    database_environment: str = os.getenv("DATABASE_ENVIRONMENT", "").strip().lower()
+
     aws_region: str = os.getenv("AWS_REGION", "us-east-1")
 
     # DynamoDB endpoint:
@@ -40,6 +47,10 @@ class Settings:
     @property
     def cors_allowed_origins(self) -> list[str]:
         return [o.strip() for o in self.cors_allowed_origins_raw.split(",") if o.strip()]
+
+    @property
+    def database_backend(self) -> str:
+        return "postgres" if self.database_url else "dynamodb"
 
 
 settings = Settings()

@@ -1,13 +1,13 @@
 """
-Seeds the DynamoDB table with fictional sample cafes, drinks, and taste profiles.
+Seeds the configured database with fictional sample cafes, drinks, and taste profiles.
 ALL DATA IS FICTIONAL and for demo purposes only.
 
 Run after create_tables.py:
   docker compose exec api python -m app.seed.seed_data
 """
-import boto3
 from decimal import Decimal
 from app.core.config import settings
+from app.services import db
 
 # ── Sample data ──────────────────────────────────────────────────────────────
 # Note: All cafes, drinks, prices, and descriptions below are entirely fictional.
@@ -166,8 +166,14 @@ DRINKS = [
 ]
 
 
-def seed(table):
+def seed(table=None):
     now = "2026-06-05T00:00:00"
+
+    def write(item):
+        if table is not None:
+            table.put_item(Item=item)
+        else:
+            db.put_item(item)
 
     for cafe in CAFES:
         item = {
@@ -182,13 +188,13 @@ def seed(table):
             item["address"] = cafe["address"]
         if cafe.get("website"):
             item["website"] = cafe["website"]
-        table.put_item(Item=item)
+        write(item)
         print(f"  Seeded cafe: {cafe['name']}")
 
     for drink in DRINKS:
         taste = drink["taste"]
         # Drink METADATA item
-        table.put_item(Item={
+        write({
             "PK": f"DRINK#{drink['id']}",
             "SK": "METADATA",
             # GSI keys so we can query drinks by cafe
@@ -206,7 +212,7 @@ def seed(table):
         })
 
         # Taste profile item
-        table.put_item(Item={
+        write({
             "PK": f"DRINK#{drink['id']}",
             "SK": "TASTE_PROFILE",
             "drink_id": drink["id"],
@@ -224,16 +230,14 @@ def seed(table):
 
 
 def main():
-    db = boto3.resource(
-        "dynamodb",
-        region_name=settings.aws_region,
-        endpoint_url=settings.dynamodb_endpoint_url,
-        aws_access_key_id=settings.aws_access_key_id,
-        aws_secret_access_key=settings.aws_secret_access_key,
+    db.initialize_database()
+    target = (
+        f"PostgreSQL table '{settings.database_table_name}'"
+        if db.using_postgres()
+        else f"DynamoDB table '{settings.dynamodb_table_name}'"
     )
-    table = db.Table(settings.dynamodb_table_name)
-    print(f"Seeding table '{settings.dynamodb_table_name}'...")
-    seed(table)
+    print(f"Seeding {target}...")
+    seed()
 
 
 if __name__ == "__main__":

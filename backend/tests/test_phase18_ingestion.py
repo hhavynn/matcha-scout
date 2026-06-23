@@ -102,7 +102,10 @@ def test_apply_production_requires_confirm():
 
 def test_apply_production_with_confirm_succeeds():
     args = _Args(apply=True, production=True, confirm_production=True)
-    is_prod, err = _validate_write_mode(args)
+    with patch("app.ingest.yelp_region_ingestion.settings") as s:
+        s.database_url = "postgresql://example.neon.tech/matcha"
+        s.database_environment = "production"
+        is_prod, err = _validate_write_mode(args)
     assert is_prod is True
     assert err == ""
 
@@ -110,6 +113,7 @@ def test_apply_production_with_confirm_succeeds():
 def test_apply_local_requires_endpoint():
     args = _Args(apply=True, local=True, production=False, confirm_production=False)
     with patch("app.ingest.yelp_region_ingestion.settings") as s:
+        s.database_url = None
         s.dynamodb_endpoint_url = None
         _, err = _validate_write_mode(args)
     assert "DYNAMODB_ENDPOINT_URL" in err
@@ -118,6 +122,7 @@ def test_apply_local_requires_endpoint():
 def test_apply_local_with_endpoint_succeeds():
     args = _Args(apply=True, local=True, production=False, confirm_production=False)
     with patch("app.ingest.yelp_region_ingestion.settings") as s:
+        s.database_url = None
         s.dynamodb_endpoint_url = "http://localhost:8001"
         is_prod, err = _validate_write_mode(args)
     assert is_prod is False
@@ -364,7 +369,8 @@ def test_production_write_does_not_require_local_endpoint():
     with patch("app.ingest.yelp_region_ingestion.search_businesses", return_value=[fake_biz]):
         with patch("app.ingest.yelp_region_ingestion.db") as mock_db:
             with patch("app.ingest.yelp_region_ingestion.settings") as mock_settings:
-                # Production: no local endpoint
+                mock_settings.database_url = "postgresql://example.neon.tech/matcha"
+                mock_settings.database_environment = "production"
                 mock_settings.dynamodb_endpoint_url = None
                 mock_db.get_item.return_value = None
                 mock_db.upsert_cafe_from_external_source.return_value = {"cafe_id": "yelp-biz-prod-test"}
