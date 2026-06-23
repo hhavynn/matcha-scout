@@ -275,10 +275,10 @@ function PreviewCard() {
         <div className="flex justify-between items-start gap-2 mt-2">
           <div>
             <div className="ms-serif" style={{ fontSize: 20, color: "#2a3124", lineHeight: 1.1 }}>
-              Stone Garden Ceremonial
+              Matcha Latte
             </div>
             <div style={{ fontSize: 12.5, color: "#8c8a78", marginTop: 4 }}>
-              Verdant Cup · Portland, OR
+              Matcha Cafe Maiko · San Diego, CA
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
