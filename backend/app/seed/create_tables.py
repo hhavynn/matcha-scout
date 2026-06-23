@@ -1,15 +1,24 @@
 """
-Creates the DynamoDB table for Matcha Scout.
+Creates the configured database storage for Matcha Scout.
 Run once before seeding data:
   docker compose exec api python -m app.seed.create_tables
 """
 import boto3
 from botocore.exceptions import ClientError
 from app.core.config import settings
+from app.services import db
 
 
 def create_table():
-    db = boto3.resource(
+    if db.using_postgres():
+        db.initialize_database()
+        print(
+            f"PostgreSQL table '{settings.database_table_name}' created successfully "
+            "(or already existed)."
+        )
+        return
+
+    dynamodb_resource = boto3.resource(
         "dynamodb",
         region_name=settings.aws_region,
         endpoint_url=settings.dynamodb_endpoint_url,
@@ -18,7 +27,7 @@ def create_table():
     )
 
     try:
-        table = db.create_table(
+        table = dynamodb_resource.create_table(
             TableName=settings.dynamodb_table_name,
             KeySchema=[
                 {"AttributeName": "PK", "KeyType": "HASH"},

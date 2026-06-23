@@ -1,7 +1,7 @@
 """
 Curation target export for Matcha Scout.
 
-Reads cafe records from local or production DynamoDB and writes a
+Reads cafe records from the configured local or production database and writes a
 gitignored local checklist — either Markdown or JSON — listing cafes
 ranked by "curation priority" so you know which to verify first.
 
@@ -10,7 +10,7 @@ Scored from keywords in name+categories and weighted by popularity.
 
 This script:
   - NEVER calls the Yelp API
-  - NEVER writes to DynamoDB
+  - NEVER writes to the database
   - NEVER creates or modifies drinks
   - NEVER scrapes any website
   - NEVER commits output files (they are gitignored)
@@ -44,6 +44,11 @@ from typing import Optional
 
 from app.core.config import settings
 from app.services import db
+
+
+def _postgres_configured() -> bool:
+    value = getattr(settings, "database_url", None)
+    return isinstance(value, str) and bool(value)
 
 
 # ── Curation priority scoring ─────────────────────────────────────────────────
@@ -122,12 +127,22 @@ def curation_priority_score(cafe: dict) -> float:
 
 def fetch_cafes(region: str, source: str) -> list[dict]:
     """
-    Fetch cafe records from DynamoDB. Never calls Yelp or any external API.
+    Fetch cafe records from the configured database. Never calls Yelp or any external API.
 
     source="local"      → uses DYNAMODB_ENDPOINT_URL (Docker)
     source="production" → uses real AWS (no endpoint override needed)
     """
-    if source == "production" and settings.dynamodb_endpoint_url:
+    if _postgres_configured():
+        if settings.database_environment not in {"local", "production"}:
+            raise ValueError(
+                "Set DATABASE_ENVIRONMENT=local or production before exporting."
+            )
+        if source != settings.database_environment:
+            raise ValueError(
+                f"--source {source} does not match "
+                f"DATABASE_ENVIRONMENT={settings.database_environment}."
+            )
+    elif source == "production" and settings.dynamodb_endpoint_url:
         # Warn but allow — the user may have intentionally set endpoint to local
         print(
             "Warning: DYNAMODB_ENDPOINT_URL is set — 'production' source will read from "
@@ -207,7 +222,7 @@ def write_markdown(cafes: list[dict], output: Path, region: str, source: str) ->
         f"> Verify drinks from official menus, personal visits, or cafe websites only.",
         f"> Yelp reviews are NOT valid sources for exact drink names or prices.",
         f"",
-        f"- Source: {source} DynamoDB",
+        f"- Source: {source} database",
         f"- Cafes: {len(cafes)}",
         f"- Sorted by curation priority (name/category keyword relevance + popularity)",
         f"",
@@ -261,7 +276,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--region", default="all",
         help="Region to export: san-diego, orange-county, or all (default: all).")
     parser.add_argument("--source", default="local", choices=["local", "production"],
-        help="DynamoDB source to read from (default: local).")
+        help="Database environment to read from (default: local).")
     parser.add_argument("--output", required=True,
         help="Output file path (should end in .local.md or .local.json to stay gitignored).")
     parser.add_argument("--limit", type=int, default=None,
@@ -284,9 +299,7 @@ def run(args: argparse.Namespace) -> int:
     cafes = fetch_cafes(args.region, args.source)
     if not cafes:
         print(
-            f"No cafes found for region={args.region!r} in {args.source} DynamoDB.\n"
-            "If using --source production, ensure AWS credentials are configured and\n"
-            "DYNAMODB_ENDPOINT_URL is not set.",
+            f"No cafes found for region={args.region!r} in the {args.source} database.",
             file=sys.stderr,
         )
         return 1

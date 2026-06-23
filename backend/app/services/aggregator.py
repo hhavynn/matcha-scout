@@ -8,14 +8,18 @@ from app.services import db
 
 
 def recalculate_taste_profile(drink_id: str) -> None:
-    table = db.get_table()
+    if db.using_postgres():
+        reviews = db.list_reviews_for_drink(drink_id)
+    else:
+        table = db.get_table()
 
-    # Fetch all REVIEW items for this drink
-    from boto3.dynamodb.conditions import Key
-    response = table.query(
-        KeyConditionExpression=Key("PK").eq(f"DRINK#{drink_id}") & Key("SK").begins_with("REVIEW#")
-    )
-    reviews = response.get("Items", [])
+        # Preserve the legacy DynamoDB query path while existing local tools
+        # and tests are transitioned.
+        from boto3.dynamodb.conditions import Key
+        response = table.query(
+            KeyConditionExpression=Key("PK").eq(f"DRINK#{drink_id}") & Key("SK").begins_with("REVIEW#")
+        )
+        reviews = response.get("Items", [])
 
     if not reviews:
         return
@@ -35,7 +39,7 @@ def recalculate_taste_profile(drink_id: str) -> None:
         return
 
     now = datetime.now(timezone.utc).isoformat()
-    table.put_item(Item={
+    db.put_item({
         "PK": f"DRINK#{drink_id}",
         "SK": "TASTE_PROFILE",
         "drink_id": drink_id,

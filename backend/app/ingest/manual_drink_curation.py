@@ -10,11 +10,11 @@ Usage:
     python -m app.ingest.manual_drink_curation \\
         --file data/curation/san-diego-drinks.example.json --dry-run
 
-    # Write to local DynamoDB:
+    # Write to the local PostgreSQL database:
     python -m app.ingest.manual_drink_curation \\
         --file data/curation/my-san-diego-drinks.json --apply --local
 
-    # Write to production DynamoDB (host machine, AWS credentials):
+    # Write to production Neon:
     python -m app.ingest.manual_drink_curation \\
         --file data/curation/my-san-diego-drinks.json \\
         --apply --production --confirm-production
@@ -42,6 +42,11 @@ from typing import Any
 
 from app.core.config import settings
 from app.services import db
+
+
+def _postgres_configured() -> bool:
+    value = getattr(settings, "database_url", None)
+    return isinstance(value, str) and bool(value)
 
 
 # ── Validation ────────────────────────────────────────────────────────────────
@@ -151,7 +156,7 @@ def normalize_entry(entry: dict[str, Any]) -> dict[str, Any]:
 # ── Cafe resolution ───────────────────────────────────────────────────────────
 
 def resolve_cafe(entry: dict[str, Any]) -> dict | None:
-    """Return the DynamoDB cafe item that matches this entry, or None."""
+    """Return the configured database cafe item that matches this entry, or None."""
     if entry.get("cafe_external_source") and entry.get("cafe_external_id"):
         return db.find_cafe_by_external_id(
             entry["cafe_external_source"], entry["cafe_external_id"]
@@ -286,11 +291,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--local", action="store_true",
-        help="Confirm this run targets local DynamoDB only (DYNAMODB_ENDPOINT_URL must be set).",
+        help="Confirm this run targets the local database.",
     )
     parser.add_argument(
         "--production", action="store_true",
-        help="Confirm this run targets production DynamoDB (DYNAMODB_ENDPOINT_URL must be unset).",
+        help="Confirm this run targets the production database.",
     )
     parser.add_argument(
         "--confirm-production", action="store_true",
@@ -313,20 +318,34 @@ def run(args: argparse.Namespace) -> int:
         print("ERROR: Choose only one target: --local or --production.", file=sys.stderr)
         return 2
 
-    if local and not settings.dynamodb_endpoint_url:
-        print(
-            "ERROR: --local requires DYNAMODB_ENDPOINT_URL to be set.",
-            file=sys.stderr,
-        )
-        return 2
+    if _postgres_configured():
+        if local and settings.database_environment != "local":
+            print(
+                "ERROR: --local requires DATABASE_ENVIRONMENT=local.",
+                file=sys.stderr,
+            )
+            return 2
+        if production and settings.database_environment != "production":
+            print(
+                "ERROR: --production requires DATABASE_ENVIRONMENT=production.",
+                file=sys.stderr,
+            )
+            return 2
+    else:
+        if local and not settings.dynamodb_endpoint_url:
+            print(
+                "ERROR: --local requires DYNAMODB_ENDPOINT_URL to be set.",
+                file=sys.stderr,
+            )
+            return 2
 
-    if production and settings.dynamodb_endpoint_url:
-        print(
-            "ERROR: --production refused because DYNAMODB_ENDPOINT_URL is set. "
-            "Unset it before targeting production DynamoDB.",
-            file=sys.stderr,
-        )
-        return 2
+        if production and settings.dynamodb_endpoint_url:
+            print(
+                "ERROR: --production refused because DYNAMODB_ENDPOINT_URL is set. "
+                "Unset it before targeting production DynamoDB.",
+                file=sys.stderr,
+            )
+            return 2
 
     if applying:
         if not local and not production:
@@ -393,7 +412,7 @@ def run(args: argparse.Namespace) -> int:
     result.print_summary(applying)
 
     if not applying:
-        print("\nDry run only. Re-run with --apply --local to write to local DynamoDB.")
+        print("\nDry run only. Re-run with --apply --local to write to the local database.")
 
     # Exit non-zero if any records were invalid or cafes were missing
     if result.invalid_records or result.missing_cafe:

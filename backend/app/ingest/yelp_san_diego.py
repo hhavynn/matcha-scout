@@ -17,6 +17,11 @@ from app.services.yelp_client import (
 )
 
 
+def _postgres_configured() -> bool:
+    value = getattr(settings, "database_url", None)
+    return isinstance(value, str) and bool(value)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Dry-run or locally ingest San Diego cafe metadata from the official Yelp Fusion API."
@@ -27,8 +32,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--location", default=settings.yelp_default_location)
     parser.add_argument("--include-reviews", action="store_true")
     parser.add_argument("--dry-run", action="store_true", help="Preview only. This is the default unless --apply is set.")
-    parser.add_argument("--apply", action="store_true", help="Write to local DynamoDB. Requires --local.")
-    parser.add_argument("--local", action="store_true", help="Confirm this run targets local/admin DynamoDB only.")
+    parser.add_argument("--apply", action="store_true", help="Write to the local database. Requires --local.")
+    parser.add_argument("--local", action="store_true", help="Confirm this run targets the local/admin database only.")
     parser.add_argument("--no-overwrite", action="store_true", help="Preserve existing user-owned cafe fields when updating.")
     parser.add_argument(
         "--request-delay", type=float, default=0.5,
@@ -55,9 +60,13 @@ def run(args: argparse.Namespace) -> int:
         print("--apply requires --local. Production ingestion is intentionally unsupported in Phase 11.", file=sys.stderr)
         return 2
 
-    if applying and not settings.dynamodb_endpoint_url:
-        print("Refusing to apply without DYNAMODB_ENDPOINT_URL. Phase 11 ingestion is local-only.", file=sys.stderr)
-        return 2
+    if applying:
+        if _postgres_configured() and settings.database_environment != "local":
+            print("Refusing to apply without DATABASE_ENVIRONMENT=local.", file=sys.stderr)
+            return 2
+        if not _postgres_configured() and not settings.dynamodb_endpoint_url:
+            print("Refusing to apply without DYNAMODB_ENDPOINT_URL. Phase 11 ingestion is local-only.", file=sys.stderr)
+            return 2
 
     ingested_at = datetime.now(timezone.utc).isoformat()
     businesses = search_businesses(args.term, args.location, args.limit, args.offset)
@@ -87,7 +96,7 @@ def run(args: argparse.Namespace) -> int:
         print("No Yelp businesses returned.")
 
     if not applying:
-        print("\nDry run only. Re-run with --apply --local to write to local DynamoDB.")
+        print("\nDry run only. Re-run with --apply --local to write to the local database.")
     return 0
 
 

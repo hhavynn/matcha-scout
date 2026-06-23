@@ -2,7 +2,6 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 from fastapi import APIRouter, HTTPException
-from boto3.dynamodb.conditions import Key
 from app.services import db
 from app.services.ai_parser import parse_matcha_review
 from app.services.aggregator import recalculate_taste_profile
@@ -73,11 +72,7 @@ def list_reviews(drink_id: str):
     if not drink:
         raise HTTPException(status_code=404, detail=f"Drink '{drink_id}' not found")
 
-    table = db.get_table()
-    response = table.query(
-        KeyConditionExpression=Key("PK").eq(f"DRINK#{drink_id}") & Key("SK").begins_with("REVIEW#")
-    )
-    items = response.get("Items", [])
+    items = db.list_reviews_for_drink(drink_id)
 
     return [
         ReviewResponse(

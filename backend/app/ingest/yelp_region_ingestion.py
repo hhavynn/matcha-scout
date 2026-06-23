@@ -58,6 +58,11 @@ from app.services.yelp_client import (
 YELP_MAX_PER_REQUEST = 50
 
 
+def _postgres_configured() -> bool:
+    value = getattr(settings, "database_url", None)
+    return isinstance(value, str) and bool(value)
+
+
 # ── Call counter ──────────────────────────────────────────────────────────────
 
 @dataclass
@@ -200,9 +205,9 @@ def parse_args() -> argparse.Namespace:
     write_group.add_argument("--apply", action="store_true",
         help="Write to the database (requires --local or --production --confirm-production).")
     write_group.add_argument("--local", action="store_true",
-        help="Write to local DynamoDB (Docker Compose). DYNAMODB_ENDPOINT_URL must be set.")
+        help="Write to the local database (Docker Compose).")
     write_group.add_argument("--production", action="store_true",
-        help="Write to production DynamoDB (matcha_scout_prod). "
+        help="Write to the production database. "
              "Requires --confirm-production to prevent accidents.")
     write_group.add_argument("--confirm-production", action="store_true",
         help="Explicit confirmation that you intend to write to production.")
@@ -221,7 +226,11 @@ def _validate_write_mode(args: argparse.Namespace) -> tuple[bool, str]:
         return False, "--local and --production are mutually exclusive."
 
     if args.local:
-        if not settings.dynamodb_endpoint_url:
+        if _postgres_configured() and settings.database_environment != "local":
+            return False, (
+                "--apply --local requires DATABASE_ENVIRONMENT=local."
+            )
+        if not _postgres_configured() and not settings.dynamodb_endpoint_url:
             return False, (
                 "--apply --local requires DYNAMODB_ENDPOINT_URL to be set. "
                 "Is Docker Compose running?"
@@ -234,12 +243,16 @@ def _validate_write_mode(args: argparse.Namespace) -> tuple[bool, str]:
                 "--apply --production requires --confirm-production. "
                 "This prevents accidental production writes."
             )
+        if _postgres_configured() and settings.database_environment != "production":
+            return True, (
+                "--apply --production requires DATABASE_ENVIRONMENT=production."
+            )
         return True, ""  # production write confirmed, no error
 
     # --apply without --local or --production
     return False, (
         "--apply requires either --local (Docker Compose) or "
-        "--production --confirm-production (production DynamoDB)."
+        "--production --confirm-production (production database)."
     )
 
 
@@ -290,7 +303,7 @@ def run(args: argparse.Namespace) -> int:
     print()
 
     if is_production:
-        print("  ⚠️  PRODUCTION WRITE — will write to matcha_scout_prod DynamoDB")
+        print("  ⚠️  PRODUCTION WRITE — will write to the configured production database")
         print()
 
     # ── Sweep ────────────────────────────────────────────────────────────────

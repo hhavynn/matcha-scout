@@ -1,9 +1,89 @@
 from __future__ import annotations
 
+from datetime import date, datetime
+from decimal import Decimal
+from typing import Any
+
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
-from botocore.exceptions import ClientError
 from app.core.config import settings
+
+
+def using_postgres() -> bool:
+    return settings.database_backend == "postgres"
+
+
+def _postgres_connection():
+    if not settings.database_url:
+        raise RuntimeError("DATABASE_URL is required for PostgreSQL persistence.")
+
+    import psycopg
+    from psycopg.rows import dict_row
+
+    # Neon provides a pooled endpoint for serverless clients. Disabling
+    # automatic prepared statements keeps the client compatible with
+    # transaction-pooling behavior.
+    return psycopg.connect(
+        settings.database_url,
+        autocommit=True,
+        prepare_threshold=None,
+        row_factory=dict_row,
+    )
+
+
+def _safe_table_name() -> str:
+    table_name = settings.database_table_name
+    if not table_name.replace("_", "").isalnum():
+        raise ValueError("DATABASE_TABLE_NAME may contain only letters, numbers, and underscores.")
+    return table_name
+
+
+def _json_value(value: Any) -> Any:
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {key: _json_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_value(item) for item in value]
+    return value
+
+
+def initialize_database() -> None:
+    """Create the PostgreSQL item table and access-pattern indexes."""
+    if not using_postgres():
+        return
+
+    table_name = _safe_table_name()
+    with _postgres_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""
+                CREATE TABLE IF NOT EXISTS {table_name} (
+                    pk TEXT NOT NULL,
+                    sk TEXT NOT NULL,
+                    gsi1pk TEXT,
+                    gsi1sk TEXT,
+                    data JSONB NOT NULL,
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    PRIMARY KEY (pk, sk)
+                )
+                """
+            )
+            cursor.execute(
+                f"""
+                CREATE INDEX IF NOT EXISTS {table_name}_gsi1_idx
+                ON {table_name} (gsi1pk, gsi1sk)
+                WHERE gsi1pk IS NOT NULL
+                """
+            )
+            cursor.execute(
+                f"""
+                CREATE INDEX IF NOT EXISTS {table_name}_sk_idx
+                ON {table_name} (sk)
+                """
+            )
 
 
 def get_dynamodb_resource():
@@ -38,17 +118,40 @@ def get_dynamodb_resource():
 
 
 def get_table():
+    if using_postgres():
+        raise RuntimeError("get_table() is DynamoDB-only; use the database service helpers.")
     db = get_dynamodb_resource()
     return db.Table(settings.dynamodb_table_name)
 
 
 def get_item(pk: str, sk: str) -> dict | None:
+    if using_postgres():
+        table_name = _safe_table_name()
+        with _postgres_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"SELECT data FROM {table_name} WHERE pk = %s AND sk = %s",
+                    (pk, sk),
+                )
+                row = cursor.fetchone()
+        return row["data"] if row else None
+
     table = get_table()
     response = table.get_item(Key={"PK": pk, "SK": sk})
     return response.get("Item")
 
 
 def query_by_pk(pk: str) -> list[dict]:
+    if using_postgres():
+        table_name = _safe_table_name()
+        with _postgres_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"SELECT data FROM {table_name} WHERE pk = %s ORDER BY sk",
+                    (pk,),
+                )
+                return [row["data"] for row in cursor.fetchall()]
+
     table = get_table()
     response = table.query(KeyConditionExpression=Key("PK").eq(pk))
     return response.get("Items", [])
@@ -56,6 +159,21 @@ def query_by_pk(pk: str) -> list[dict]:
 
 def query_gsi(gsi_pk_value: str) -> list[dict]:
     """Query GSI1 by GSI1PK — used to fetch all drinks for a cafe."""
+    if using_postgres():
+        table_name = _safe_table_name()
+        with _postgres_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                    SELECT data
+                    FROM {table_name}
+                    WHERE gsi1pk = %s
+                    ORDER BY gsi1sk
+                    """,
+                    (gsi_pk_value,),
+                )
+                return [row["data"] for row in cursor.fetchall()]
+
     table = get_table()
     response = table.query(
         IndexName="GSI1",
@@ -67,6 +185,21 @@ def query_gsi(gsi_pk_value: str) -> list[dict]:
 def scan_by_entity_type(entity_type: str) -> list[dict]:
     """Scan for all items matching an entity type prefix (e.g. SK='METADATA' filtered by PK prefix).
     Not efficient at scale, but fine for a small demo dataset."""
+    if using_postgres():
+        table_name = _safe_table_name()
+        with _postgres_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                    SELECT data
+                    FROM {table_name}
+                    WHERE pk LIKE %s AND sk = 'METADATA'
+                    ORDER BY pk
+                    """,
+                    (f"{entity_type}#%",),
+                )
+                return [row["data"] for row in cursor.fetchall()]
+
     table = get_table()
     response = table.scan(
         FilterExpression=Attr("PK").begins_with(f"{entity_type}#") & Attr("SK").eq("METADATA"),
@@ -75,12 +208,49 @@ def scan_by_entity_type(entity_type: str) -> list[dict]:
 
 
 def put_item(item: dict) -> None:
+    if using_postgres():
+        from psycopg.types.json import Jsonb
+
+        normalized = _json_value(item)
+        table_name = _safe_table_name()
+        with _postgres_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                    INSERT INTO {table_name} (pk, sk, gsi1pk, gsi1sk, data)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (pk, sk) DO UPDATE SET
+                        gsi1pk = EXCLUDED.gsi1pk,
+                        gsi1sk = EXCLUDED.gsi1sk,
+                        data = EXCLUDED.data,
+                        updated_at = NOW()
+                    """,
+                    (
+                        normalized["PK"],
+                        normalized["SK"],
+                        normalized.get("GSI1PK"),
+                        normalized.get("GSI1SK"),
+                        Jsonb(normalized),
+                    ),
+                )
+        return
+
     table = get_table()
     table.put_item(Item=item)
 
 
 def scan_by_sk(sk_value: str) -> list[dict]:
     """Scan for all items with a specific SK value — used to fetch all taste profiles."""
+    if using_postgres():
+        table_name = _safe_table_name()
+        with _postgres_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"SELECT data FROM {table_name} WHERE sk = %s ORDER BY pk",
+                    (sk_value,),
+                )
+                return [row["data"] for row in cursor.fetchall()]
+
     table = get_table()
     response = table.scan(
         FilterExpression=Attr("SK").eq(sk_value),
@@ -118,6 +288,25 @@ def get_cafe_by_external_source(source: str, external_id: str) -> dict | None:
     This scan is acceptable for the local/admin ingestion MVP. At larger scale,
     source + external_id should be indexed with a dedicated GSI.
     """
+    if using_postgres():
+        table_name = _safe_table_name()
+        with _postgres_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                    SELECT data
+                    FROM {table_name}
+                    WHERE pk LIKE 'CAFE#%%'
+                      AND sk = 'METADATA'
+                      AND data->>'source' = %s
+                      AND data->>'external_id' = %s
+                    LIMIT 1
+                    """,
+                    (source, external_id),
+                )
+                row = cursor.fetchone()
+        return row["data"] if row else None
+
     table = get_table()
     response = table.scan(
         FilterExpression=(
@@ -150,7 +339,7 @@ def upsert_cafe_from_external_source(cafe: dict, no_overwrite: bool = False) -> 
 
     item["PK"] = f"CAFE#{item['cafe_id']}"
     item["SK"] = "METADATA"
-    get_table().put_item(Item=item)
+    put_item(item)
     return item
 
 
@@ -162,7 +351,7 @@ def put_external_review_excerpt(cafe_id: str, excerpt: dict) -> None:
         "SK": f"EXTERNAL_REVIEW#YELP#{excerpt['external_review_id']}",
         "cafe_id": cafe_id,
     }
-    get_table().put_item(Item=item)
+    put_item(item)
 
 
 def list_external_review_excerpts(cafe_id: str) -> list[dict]:
@@ -171,6 +360,17 @@ def list_external_review_excerpts(cafe_id: str) -> list[dict]:
         [item for item in items if item.get("SK", "").startswith("EXTERNAL_REVIEW#")],
         key=lambda item: item.get("time_created") or item.get("ingested_at") or "",
         reverse=True,
+    )
+
+
+def list_reviews_for_drink(drink_id: str) -> list[dict]:
+    return sorted(
+        [
+            item
+            for item in query_by_pk(f"DRINK#{drink_id}")
+            if item.get("SK", "").startswith("REVIEW#")
+        ],
+        key=lambda item: item.get("submitted_at", ""),
     )
 
 
