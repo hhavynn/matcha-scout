@@ -17,7 +17,7 @@ class Drink(BaseModel):
     cafe_id: str
     name: str
     description: str
-    price: float
+    price: Optional[float] = None
     milk_options: List[str]
     is_iced: Optional[bool] = None
     is_hot: Optional[bool] = None
@@ -25,6 +25,13 @@ class Drink(BaseModel):
     created_at: datetime
     source: Optional[str] = None
     verification_status: Optional[str] = None
+    verification_source: Optional[str] = None
+    verification_url: Optional[str] = None
+    verification_notes: Optional[str] = None
+    verified_at: Optional[datetime] = None
+    catalog_status: Optional[str] = None
+    exclusion_reason: Optional[str] = None
+    excluded_at: Optional[datetime] = None
     submitted_at: Optional[datetime] = None
     submitted_by_session: Optional[str] = None
 

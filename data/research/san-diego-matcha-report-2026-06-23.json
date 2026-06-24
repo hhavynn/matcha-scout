@@ -1,0 +1,492 @@
+{
+  "version": 1,
+  "checked_at": "2026-06-23T12:00:00-07:00",
+  "source_note": "San Diego Matcha Cafes Research Report supplied by the project owner. Menu records include only prices explicitly surfaced in the report.",
+  "cafes": [
+    {
+      "name": "12 Hrs Matcha Cafe",
+      "aliases": ["12 HRS Matcha Cafe"],
+      "menu_url": "https://12hrsmatchacafe.square.site/s/order",
+      "menu_summary": "Matcha-focused Pacific Beach cafe known for einspanner-style drinks and rotating tiramisu, mango, birthday-cake, and ube specials. A stable plain-latte price was not surfaced.",
+      "ceremonial_matcha": true,
+      "research_label": "Official order page and official social sources",
+      "beli_rating": 9.6,
+      "remove_drinks": ["Matcha Latte"]
+    },
+    {
+      "name": "Asa Bakery & Cafe",
+      "menu_url": "https://asabakerycafe.com/menu",
+      "menu_summary": "Japanese bakery and cafe serving Shizuoka organic matcha alongside matcha croissants and matcha kinako donuts.",
+      "ceremonial_matcha": false,
+      "research_label": "Official menu",
+      "drinks": [
+        {
+          "name": "Shizuoka Organic Matcha Latte",
+          "price": 6.0,
+          "description": "12 oz hot matcha latte made with Shizuoka organic matcha. Iced sizes carry menu surcharges.",
+          "is_hot": true,
+          "is_iced": true
+        }
+      ]
+    },
+    {
+      "name": "The Barista Botanist",
+      "aliases": ["Barista Botanist"],
+      "menu_url": "https://www.ubereats.com/store/barista-botanist/IGoBi0GzUQmd5doTJn0Mag",
+      "menu_summary": "Ceremonial-grade matcha program with unsweetened, strawberry, yuzu-lemonade, and rotating fruit-cloud builds.",
+      "ceremonial_matcha": true,
+      "research_label": "Direct order menu",
+      "drinks": [
+        {
+          "name": "Organic Ceremonial Grade Matcha (Unsweetened)",
+          "aliases": ["Organic Ceremonial Grade Matcha"],
+          "price": 8.4,
+          "description": "Unsweetened organic ceremonial-grade matcha."
+        },
+        {
+          "name": "Strawberry Matcha",
+          "price": 9.6,
+          "description": "Ceremonial matcha layered with strawberry."
+        },
+        {
+          "name": "Yuzu Matcha Lemonade",
+          "price": 9.6,
+          "description": "Ceremonial matcha with bright yuzu lemonade."
+        }
+      ]
+    },
+    {
+      "name": "Boba Religion",
+      "menu_url": "https://www.bobareligion.com/menu/",
+      "menu_summary": "Ingredient-forward tea bar serving handcrafted milk tea, fruit tea, Vietnamese coffee, organic boba, and matcha lattes. Current matcha pricing was not crawlable.",
+      "ceremonial_matcha": false,
+      "research_label": "Official menu"
+    },
+    {
+      "name": "Bopomofo Cafe",
+      "menu_url": "https://www.bopomofocafe.com/menu",
+      "menu_summary": "Premium matcha program with fruit-forward signature lattes alongside hojicha, tea, milk tea, and food.",
+      "ceremonial_matcha": false,
+      "research_label": "Official menu and order page",
+      "drinks": [
+        {
+          "name": "BA-LA Matcha",
+          "price": 7.65,
+          "description": "Bopomofo's premium BA-LA matcha signature."
+        },
+        {
+          "name": "Triple Strawberry Matcha",
+          "price": 7.65,
+          "description": "Premium matcha with a triple-strawberry profile."
+        },
+        {
+          "name": "Blueberry Matcha Latte",
+          "price": 7.65,
+          "description": "Premium matcha latte with blueberry."
+        }
+      ]
+    },
+    {
+      "name": "Cafe 88",
+      "menu_url": "https://linktr.ee/cafe88usd",
+      "menu_summary": "Dessert cafe advertising crepes, waffles, shakes, coffee, and matcha. A stable itemized matcha menu was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official link hub and social source"
+    },
+    {
+      "name": "Cafe Alessie",
+      "menu_url": "https://www.toasttab.com/local/order/cafe-alessie-2-470-15th-street",
+      "menu_summary": "Large matcha section ranging from a classic latte to fruit, cold-cream, and dessert-inspired seasonal builds.",
+      "ceremonial_matcha": false,
+      "research_label": "Official Toast menu",
+      "drinks": [
+        {"name": "Matcha", "price": 6.0, "description": "Cafe Alessie's classic matcha."},
+        {"name": "Lavender Vanilla Matcha", "price": 6.5, "description": "Matcha flavored with lavender and vanilla."},
+        {"name": "Coconut Matcha", "price": 6.8, "description": "Matcha with a coconut-forward profile."},
+        {"name": "Strawberry Matcha", "price": 6.8, "description": "Matcha layered with strawberry."},
+        {"name": "Honey Cold Cream Matcha", "price": 6.75, "description": "Matcha topped with honey cold cream."},
+        {"name": "Fresas y Crema Matcha", "price": 7.65, "description": "Strawberries-and-cream-inspired matcha."},
+        {"name": "Banana Pudding Matcha", "aliases": ["Banana Pudding matcha"], "price": 7.85, "description": "Dessert-style matcha inspired by banana pudding."}
+      ]
+    },
+    {
+      "name": "Camellia Rd Tea Bar",
+      "menu_url": "https://teabar.camelliard.com/",
+      "menu_summary": "Tea bar with matcha tea, matcha lattes, and rotating strawberry, mango, and cold-foam matcha applications. Current pricing was incomplete.",
+      "ceremonial_matcha": false,
+      "research_label": "Official order page and official social sources"
+    },
+    {
+      "name": "Casa De Otay",
+      "menu_url": "https://casadeotay.com/collections/menu",
+      "menu_summary": "Chula Vista cafe centered on specialty espresso, ceremonial matcha, and house syrups.",
+      "ceremonial_matcha": true,
+      "research_label": "Official Shopify menu",
+      "drinks": [
+        {"name": "Matcha Latte", "price": 5.5, "description": "Classic ceremonial matcha latte."},
+        {"name": "Banana Matcha", "price": 8.0, "description": "Ceremonial matcha with banana."},
+        {"name": "Strawberry Matcha", "price": 8.0, "description": "Ceremonial matcha with strawberry."}
+      ]
+    },
+    {
+      "name": "Chance’s Coffee",
+      "aliases": ["Chance's Coffee"],
+      "menu_url": "https://www.chancescoffee.com/",
+      "menu_summary": "Specialty coffee and matcha shop using ceremonial Uji matcha, including black-sesame and rotating seasonal builds. Stable pricing was not surfaced.",
+      "ceremonial_matcha": true,
+      "research_label": "Official website and official order snippets"
+    },
+    {
+      "name": "Coco Bomb",
+      "menu_url": "https://sappclub.com/Coco-Bomb-San-Diego",
+      "menu_summary": "Thai coconut dessert cafe with a focused organic Uji matcha offering and house pandan syrup.",
+      "ceremonial_matcha": false,
+      "research_label": "Direct menu page",
+      "drinks": [
+        {
+          "name": "Iced Matcha Latte",
+          "price": 7.75,
+          "description": "Organic Uji matcha with milk choice and house pandan syrup.",
+          "is_iced": true,
+          "is_hot": false
+        }
+      ]
+    },
+    {
+      "name": "Communal",
+      "menu_url": "https://www.toasttab.com/local/order/communalcoffee",
+      "menu_summary": "Coffee shop offering both classic and ceremonial matcha preparations, hot or iced, plus cold-foam and lemonade builds.",
+      "ceremonial_matcha": true,
+      "research_label": "Official Toast menu",
+      "drinks": [
+        {"name": "Hot Matcha Latte", "price": 7.0, "description": "Classic hot matcha latte.", "is_hot": true, "is_iced": false},
+        {"name": "Hot Matcha – Ceremonial", "price": 8.5, "description": "Hot ceremonial matcha preparation.", "is_hot": true, "is_iced": false},
+        {"name": "Iced Matcha Latte", "price": 7.0, "description": "Classic iced matcha latte.", "is_hot": false, "is_iced": true},
+        {"name": "Iced Matcha – Ceremonial", "price": 8.5, "description": "Iced ceremonial matcha preparation.", "is_hot": false, "is_iced": true},
+        {"name": "Matcha Lemonade", "price": 6.0, "description": "Matcha shaken with lemonade.", "is_hot": false, "is_iced": true}
+      ]
+    },
+    {
+      "name": "Cristallo Cafe",
+      "menu_url": "https://www.instagram.com/cristallocafesd/",
+      "menu_summary": "Chula Vista cafe serving coffee, matcha, pastries, and breakfast croissants. A stable priced matcha menu was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official social source"
+    },
+    {
+      "name": "Despertar Coffee",
+      "menu_url": "https://despertarcoffeeco.com/",
+      "menu_summary": "Coffee-and-matcha bar with build-your-own flights, Kinako Matcha, and rotating specials. Current full pricing remains unspecified.",
+      "ceremonial_matcha": false,
+      "research_label": "Official website and official social sources"
+    },
+    {
+      "name": "Drift Cafe",
+      "menu_url": "https://www.driftcafesd.com/s/order",
+      "menu_summary": "Pacific Beach cafe with a straightforward matcha latte and rotating banana and mango matcha specials.",
+      "ceremonial_matcha": false,
+      "research_label": "Official order page",
+      "drinks": [
+        {
+          "name": "Matcha Latte",
+          "price": 6.0,
+          "description": "Matcha latte starting at $6; larger or customized versions reach $7.50."
+        }
+      ]
+    },
+    {
+      "name": "Easy Does It",
+      "menu_url": "https://www.easydoesit-sd.com/",
+      "menu_summary": "Coffee, matcha, and tea program with rotating seasonal drinks; Matcha Passionfruit Tonic is a visible current signature.",
+      "ceremonial_matcha": false,
+      "research_label": "Official website"
+    },
+    {
+      "name": "ESSNTL Coffee",
+      "menu_summary": "Vietnamese-coffee-and-matcha program featuring strawberry, lavender, Earl Grey, and einspanner-style matcha. Stable official pricing was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official social sources"
+    },
+    {
+      "name": "Forum Coffee",
+      "menu_url": "https://www.forumcoffees.com/drink-menu/",
+      "menu_summary": "Ceremonial matcha program with signatures including horchata matcha, matcha lemonade, and rose Earl Grey matcha.",
+      "ceremonial_matcha": true,
+      "research_label": "Official drinks page and official social sources"
+    },
+    {
+      "name": "Friends of Friends",
+      "menu_url": "https://order.toasttab.com/online/friends-of-friends-127-east-8th-street",
+      "menu_summary": "National City cafe with special matcha menus and dessert collaborations. A stable current regular matcha menu was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official order and event sources"
+    },
+    {
+      "name": "Galu Cafe and Delicatessen",
+      "menu_url": "https://downtownchulavista.com/go/galu-cafe-and-delicatessen",
+      "menu_summary": "Scratch-made cafe and deli with banana crème matcha and strawberry matcha among its rotating drinks.",
+      "ceremonial_matcha": false,
+      "research_label": "Official district page and official social sources"
+    },
+    {
+      "name": "Gotcha Tea",
+      "menu_url": "https://www.instagram.com/gotcha_teahouse_sd/",
+      "menu_summary": "Tea and boba shop with a surfaced Matcha Latte price; the rest of the current menu remains unspecified.",
+      "ceremonial_matcha": false,
+      "research_label": "Public menu snippet and official social source",
+      "drinks": [
+        {"name": "Matcha Latte", "price": 6.75, "description": "Classic matcha latte from Gotcha Tea."}
+      ]
+    },
+    {
+      "name": "Hatsuzakura",
+      "menu_url": "https://hatsuzakurasd.com/san-diego-university-heights-hatsuzakura-food-menu",
+      "menu_summary": "Japanese dessert house with matcha kakigori, matcha mochi ice cream, and a classic matcha latte.",
+      "ceremonial_matcha": false,
+      "research_label": "Official menu and official social sources",
+      "drinks": [
+        {"name": "Matcha Kakigori", "price": 18.5, "description": "Japanese shaved ice with a matcha profile."},
+        {"name": "Matcha Mochi Ice Cream", "price": 8.0, "description": "Two pieces of matcha mochi ice cream."}
+      ]
+    },
+    {
+      "name": "Hinar Dessert Bar & Cafe",
+      "menu_summary": "Dessert-forward matcha lineup with latte, strawberry, banana, and spritz-style builds. Exact official pricing was not recovered.",
+      "ceremonial_matcha": false,
+      "research_label": "Public menu and social evidence"
+    },
+    {
+      "name": "Holy Matcha",
+      "menu_url": "https://www.holymatchasd.com/",
+      "menu_summary": "Dedicated North Park matcha cafe centered on ceremonial matcha, lattes, lemonade, horchata-style matcha, and pastries. Current prices were not surfaced.",
+      "ceremonial_matcha": true,
+      "research_label": "Official website"
+    },
+    {
+      "name": "Hydout Cafe",
+      "menu_url": "https://www.toasttab.com/local/order/hydout-cafe-414-university-avenue/item-strawberry-matcha_9861cc64-9387-4840-b2be-3abc03f252c0",
+      "menu_summary": "Vietnamese–European coffee bar using seasonal matcha from Hà Nội in fruit and coconut-cloud builds.",
+      "ceremonial_matcha": false,
+      "research_label": "Official item page and public delivery snippets",
+      "drinks": [
+        {"name": "Blueberry Matcha", "price": 8.5, "description": "Seasonal Hà Nội matcha with blueberry."},
+        {"name": "Mango Matcha", "price": 8.5, "description": "Seasonal Hà Nội matcha with mango."},
+        {"name": "Strawberry Matcha", "price": 8.5, "description": "Seasonal Hà Nội matcha with strawberry."}
+      ]
+    },
+    {
+      "name": "KAFE'SITO",
+      "menu_url": "https://www.kafesito.com/",
+      "menu_summary": "Espresso and matcha bar with matcha americano, matcha latte, and hojicha latte.",
+      "ceremonial_matcha": false,
+      "research_label": "Official website and order page",
+      "drinks": [
+        {"name": "Matcha Americano", "price": 6.0, "description": "Matcha prepared in an Americano-style drink."},
+        {"name": "Matcha Latte", "price": 7.5, "description": "KAFE'SITO's classic matcha latte."}
+      ]
+    },
+    {
+      "name": "Kyoto Coast Matcha",
+      "menu_summary": "San Diego matcha-focused concept and pop-up. A stable current official menu with prices was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Public business sources"
+    },
+    {
+      "name": "Labora",
+      "menu_url": "https://laboracafe.com/menu",
+      "menu_summary": "One of San Diego's deepest documented ceremonial matcha menus, with classic, Vienna, Earl Grey, double-matcha, and mix-and-match foam builds.",
+      "ceremonial_matcha": true,
+      "research_label": "Official menu",
+      "drinks": [
+        {"name": "Labora 1", "aliases": ["Premium Ceremonial Grade Matcha Latte"], "price": 7.5, "description": "Labora's core ceremonial matcha latte."},
+        {"name": "Vienna Matcha", "price": 8.5, "description": "Ceremonial matcha in Labora's Vienna-style preparation."},
+        {"name": "Earl 37", "price": 7.5, "description": "Ceremonial matcha with an Earl Grey-inspired profile."},
+        {"name": "Matcha X2", "price": 8.5, "description": "A double-matcha ceremonial build."}
+      ]
+    },
+    {
+      "name": "Little While",
+      "menu_url": "https://www.littlewhilesd.com/menu",
+      "menu_summary": "Tea-forward menu with a classic latte, maple-coconut LW latte, coconut-water matcha, and a chawan ceremony set.",
+      "ceremonial_matcha": true,
+      "research_label": "Official menu",
+      "drinks": [
+        {"name": "Matcha Latte", "price": 7.0, "description": "Little While's classic matcha latte."},
+        {"name": "LW Matcha Latte", "price": 7.5, "description": "Matcha with maple, coconut water, and milk."},
+        {"name": "Matcha + Coconut Water", "price": 7.0, "description": "Matcha served with coconut water."},
+        {"name": "Matcha Ceremony Set", "price": 9.0, "description": "Matcha served in a chawan with coconut water."}
+      ]
+    },
+    {
+      "name": "Lovesong Coffee",
+      "menu_url": "https://www.lovesongcoffee.com/lovesong-menu",
+      "menu_summary": "Flavor-forward Top Shelf Matcha menu built with organic matcha. The surfaced signatures are each priced at $7.50.",
+      "ceremonial_matcha": false,
+      "research_label": "Official menu",
+      "drinks": [
+        {"name": "Lazy Sunday", "price": 7.5, "description": "Organic-matcha signature from Lovesong's Top Shelf Matcha menu."},
+        {"name": "Pool Party!!!", "price": 7.5, "description": "Organic-matcha signature from Lovesong's Top Shelf Matcha menu."},
+        {"name": "King of the Jungle", "price": 7.5, "description": "Organic-matcha signature from Lovesong's Top Shelf Matcha menu."},
+        {"name": "Twisted Sister", "price": 7.5, "description": "Organic-matcha signature from Lovesong's Top Shelf Matcha menu."},
+        {"name": "Maui Babe", "price": 7.5, "description": "Organic-matcha signature from Lovesong's Top Shelf Matcha menu."},
+        {"name": "Double Down, Bee", "price": 7.5, "description": "Organic-matcha signature from Lovesong's Top Shelf Matcha menu."},
+        {"name": "Evergreen Parke", "price": 7.5, "description": "Organic-matcha signature from Lovesong's Top Shelf Matcha menu."},
+        {"name": "WildChild", "price": 7.5, "description": "Organic-matcha signature from Lovesong's Top Shelf Matcha menu."},
+        {"name": "Bodhi Boy", "price": 7.5, "description": "Organic-matcha signature from Lovesong's Top Shelf Matcha menu."}
+      ]
+    },
+    {
+      "name": "Marta",
+      "menu_url": "https://www.instagram.com/marta.sandiego/",
+      "menu_summary": "Coffee-and-pastry shop with a traditional espresso and matcha menu plus rotating Mexican-inspired specials. Stable pricing was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official social source"
+    },
+    {
+      "name": "Matcha Cafe Maiko",
+      "menu_url": "https://www.matchasd.com/menu",
+      "menu_summary": "Kyoto-linked matcha specialist with tea, latte, frappe, float, soft serve, parfait, and shaved-ice categories. Store-specific prices were incomplete.",
+      "ceremonial_matcha": false,
+      "research_label": "Official San Diego menu hub"
+    },
+    {
+      "name": "MNGO cafe",
+      "menu_url": "https://order.online/store/mngo-cafe-885285",
+      "menu_summary": "Dessert and milk-tea cafe with mango, strawberry, coconut, brown-sugar, and smoothie-style matcha drinks.",
+      "ceremonial_matcha": false,
+      "research_label": "Direct order menu",
+      "drinks": [
+        {"name": "Mango Matcha Latte", "price": 5.55, "description": "Mango matcha latte; menu price starts at $5.55."},
+        {"name": "Strawberry Matcha Latte", "price": 5.55, "description": "Strawberry matcha latte; menu price starts at $5.55."},
+        {"name": "Matcha Coco Drink", "price": 5.95, "description": "Coconut-forward matcha drink; menu price starts at $5.95."},
+        {"name": "Matcha Golden Brown", "price": 6.25, "description": "Golden-brown-sugar-style matcha; menu price starts at $6.25."},
+        {"name": "Mango Matcha Smoothie", "price": 7.95, "description": "Mango and matcha smoothie; menu price starts at $7.95."}
+      ]
+    },
+    {
+      "name": "Mostra Coffee",
+      "menu_url": "https://order.online/store/mostra-coffee-25417472",
+      "menu_summary": "Location-dependent menu with classic, blueberry, and iced ceremonial matcha lattes.",
+      "ceremonial_matcha": true,
+      "research_label": "Location order menu and official cafe menu",
+      "drinks": [
+        {"name": "Matcha Latte", "price": 6.15, "description": "Classic matcha latte from the surfaced Mostra location menu."},
+        {"name": "Blueberry Matcha Latte", "price": 6.95, "description": "Matcha latte with blueberry."},
+        {"name": "Iced Ceremonial Matcha Latte", "price": 7.5, "description": "Iced latte prepared with ceremonial matcha.", "is_iced": true, "is_hot": false}
+      ]
+    },
+    {
+      "name": "Nomade",
+      "menu_url": "https://www.instagram.com/nomade.sd/",
+      "menu_summary": "Daytime specialty coffee and matcha program before the space transitions into a tapas, wine, and listening-bar concept. Pricing was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official social source"
+    },
+    {
+      "name": "PARU",
+      "menu_url": "https://paruteabar.com/",
+      "menu_summary": "Traditional tea specialist serving organic ceremonial matcha as a straight sip, latte, or lemonade.",
+      "ceremonial_matcha": true,
+      "research_label": "Official tea site",
+      "drinks": [
+        {"name": "Traditional Ceremonial Matcha", "price": 6.0, "description": "Organic ceremonial matcha served as a traditional straight sip.", "milk_options": ["none"]},
+        {"name": "Ceremonial Matcha Latte", "price": 7.5, "description": "Organic ceremonial matcha prepared as a latte."},
+        {"name": "Matcha Lemonade", "price": 8.0, "description": "Organic ceremonial matcha with lemonade.", "is_iced": true, "is_hot": false}
+      ]
+    },
+    {
+      "name": "Provecho Coffee",
+      "menu_url": "https://provechocoffee.com/",
+      "menu_summary": "Rotating matcha program with Orange Dream, rose, and matcha-tonic specials. Stable official pricing was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official website and official social sources"
+    },
+    {
+      "name": "Rikka Fika",
+      "menu_url": "https://rikkafika.com/pages/drink-menu",
+      "menu_summary": "Concise coffee-and-matcha menu. Public creator posts describe it as a Beli Top 2025 Matcha Spot, but no public numeric Beli score surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official drinks page and public award-style references"
+    },
+    {
+      "name": "S3 Coffee Bar",
+      "menu_url": "https://order.toasttab.com/online/s3-coffee-bar",
+      "menu_summary": "Ceremonial matcha menu with a classic latte plus strawberry and banana seasonal builds.",
+      "ceremonial_matcha": true,
+      "research_label": "Official Toast menu",
+      "drinks": [
+        {"name": "Matcha", "price": 6.25, "description": "Ceremonial matcha with simple syrup and whole milk; menu price starts at $6.25.", "milk_options": ["whole"]},
+        {"name": "Strawberry Matcha", "price": 7.5, "description": "Ceremonial strawberry matcha; menu price starts at $7.50."},
+        {"name": "Banana Matcha", "price": 7.5, "description": "Ceremonial banana matcha; menu price starts at $7.50."}
+      ]
+    },
+    {
+      "name": "Saigon Coffee",
+      "menu_url": "https://www.saigoncoffee.com/menu",
+      "menu_summary": "Vietnamese-style cafe with Matcha Iced blended with condensed milk. Official crawlable pricing was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official menu"
+    },
+    {
+      "name": "Selva Coffee House",
+      "menu_url": "https://www.toasttab.com/local/order/selvacoffeehouse",
+      "menu_summary": "Plant-filled community cafe with a simple matcha latte and matcha americano alongside coffee and tea lattes.",
+      "ceremonial_matcha": false,
+      "research_label": "Official Toast menu",
+      "drinks": [
+        {"name": "Matcha Latte", "price": 6.25, "description": "Classic matcha latte; menu price starts at $6.25."},
+        {"name": "Matcha Americano", "price": 6.0, "description": "Matcha prepared Americano-style."}
+      ]
+    },
+    {
+      "name": "The Cakery Cafe",
+      "menu_url": "https://www.thecakerysd.com/",
+      "menu_summary": "Craft coffee and dessert cafe with ceremonial-grade matcha, hojicha, cheesecakes, sandwiches, and rotating flavored matcha.",
+      "ceremonial_matcha": true,
+      "research_label": "Official website and official social sources"
+    },
+    {
+      "name": "Tori Cafe",
+      "menu_summary": "Flavor-forward matcha program with horchata, strawberry, and refresher-style drinks. A stable official priced menu was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Public business and social sources"
+    },
+    {
+      "name": "Ultreya Coffee and Tea",
+      "menu_url": "https://www.ultreyacoffeeandtea.com/",
+      "menu_summary": "Wellness-oriented cafe serving organic matcha with milk choice and optional sweetener.",
+      "ceremonial_matcha": false,
+      "research_label": "Official menu and direct-order source",
+      "drinks": [
+        {"name": "It's Just Matcha", "aliases": ["Its Just Matcha"], "price": 7.0, "description": "Organic matcha with milk choice and optional sweetener."}
+      ]
+    },
+    {
+      "name": "Urban Matcha",
+      "menu_url": "https://www.urbanmatchastore.com/",
+      "menu_summary": "Premium matcha-forward cafe with hojicha, desserts, and signatures including mango and ube cheese-cap matcha lattes. Stable pricing was not surfaced.",
+      "ceremonial_matcha": false,
+      "research_label": "Official website and official social sources"
+    },
+    {
+      "name": "Yaqui Coffee House",
+      "menu_url": "https://www.ubereats.com/store/yaqui-coffee-house/XIWzK337S0W1vNgbPX8EaQ",
+      "menu_summary": "Flavored matcha program using Grade 1 matcha, including a vegan house-strawberry signature.",
+      "ceremonial_matcha": false,
+      "research_label": "Direct order menu",
+      "drinks": [
+        {"name": "Matcha Meets Fresa", "price": 7.76, "description": "Grade 1 matcha with house-made vegan strawberry."}
+      ]
+    },
+    {
+      "name": "Yun Tea House",
+      "menu_url": "https://www.toasttab.com/local/order/yunteasd",
+      "menu_summary": "Premium tea bar with matcha signatures, hojicha, milk tea, and fresh tea rather than a plain-latte-focused program.",
+      "ceremonial_matcha": false,
+      "research_label": "Official Toast menu",
+      "drinks": [
+        {"name": "Match Made In Heaven", "price": 7.25, "description": "Icy matcha signature from Yun Tea House.", "is_iced": true, "is_hot": false}
+      ]
+    }
+  ]
+}

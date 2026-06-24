@@ -1,5 +1,8 @@
 # AWS Deployment Prep
 
+> **Historical architecture only.** The AWS account/backend is retired. Current
+> production uses Vercel Functions and Neon PostgreSQL.
+
 This document covers everything you need to do **before** running `sam deploy` in Phase 7.
 
 > **Status:** Phase 6 only prepares files. No AWS resources have been created yet.

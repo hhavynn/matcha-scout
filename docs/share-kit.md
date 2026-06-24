@@ -38,7 +38,7 @@ The current launch goal is review collection: verified drinks are live, but they
 If you are in SD/OC and have actually tried one of the listed drinks, I would love a quick review:
 https://matcha-scout.vercel.app/review
 
-Tech stack: Next.js, FastAPI, DynamoDB, AWS Lambda/API Gateway, and Vercel.
+Tech stack: Next.js, FastAPI on Vercel Functions, Neon PostgreSQL, and Vercel.
 
 ## Reddit-Style Post
 

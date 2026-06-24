@@ -6,13 +6,13 @@ With 150+ cafes per region in production, you cannot verify all of them at once.
 Use the **curation priority export script** to generate a ranked checklist:
 
 ```bash
-# From local DynamoDB (Docker running):
+# From local PostgreSQL (Docker running):
 docker compose exec api python -m app.ingest.export_curation_targets \
   --region san-diego --source local \
   --limit 50 --sort relevance \
   --output data/curation/my-san-diego-production-curation.local.md
 
-# From production DynamoDB (AWS credentials, no DYNAMODB_ENDPOINT_URL):
+# From production Neon PostgreSQL (read-only export):
 python -m app.ingest.export_curation_targets \
   --region san-diego --source production \
   --limit 50 --sort relevance \
@@ -92,6 +92,10 @@ The file must be a JSON object with a `"drinks"` array. Each entry supports:
 | `verification_source` | Yes for real entries | `"official_menu"`, `"personal_visit"`, `"cafe_website"`, or `"user_submission"` |
 | `verification_url` | When available | Official menu/source URL; use `null` for an in-person-only source |
 | `verification_notes` | Yes for real entries | Date, source checked, and any useful audit notes |
+| `verified_at` | Recommended | ISO date or timestamp for the source check |
+
+An unknown price must remain `null`. The curation workflow stores it as a database null,
+and the frontend displays “Price unavailable”; it must never be converted to `$0.00`.
 
 Example:
 
@@ -247,7 +251,7 @@ production apply workflow. In summary:
 2. Dry-run: `manual_drink_curation.py --dry-run`
 3. Apply locally and verify via `GET /cafes/{id}/drinks`
 4. Future production apply: `manual_drink_curation.py --apply --production --confirm-production`
-5. Verify via production API: `GET https://2bd8jfknuc.../cafes/{id}/drinks`
+5. Verify via production API: `GET https://matcha-scout-api.vercel.app/cafes/{id}/drinks`
 
 Do not bulk-upload guessed drinks. Start with 10–25 well-verified entries.
 

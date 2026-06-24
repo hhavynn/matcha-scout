@@ -125,7 +125,7 @@ export default function DrinkDetailClient({
                   )}
                 </div>
                 <div className="ms-mono" style={{ fontSize: 24, color: "#44563a", fontWeight: 500, flexShrink: 0 }}>
-                  ${drink.price.toFixed(2)}
+                  {drink.price == null ? "Price unavailable" : `$${drink.price.toFixed(2)}`}
                 </div>
               </div>
               <p style={{ fontSize: 14.5, color: "#585e4d", lineHeight: 1.6, marginTop: 12, marginBottom: 14 }}>
@@ -136,6 +136,34 @@ export default function DrinkDetailClient({
                   <span key={m} className="ms-pill ms-pill-bare ms-pill-sm">{m}</span>
                 ))}
               </div>
+              {(drink.verification_url || drink.verification_source) && (
+                <div
+                  style={{
+                    marginTop: 14,
+                    paddingTop: 12,
+                    borderTop: "1px solid #e8e1d0",
+                    fontSize: 12,
+                    color: "#8c8a78",
+                  }}
+                >
+                  Verified from{" "}
+                  {drink.verification_url ? (
+                    <a
+                      href={drink.verification_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#5f7850", fontWeight: 600, textDecoration: "none" }}
+                    >
+                      {drink.verification_source || "official menu"} ↗
+                    </a>
+                  ) : (
+                    drink.verification_source
+                  )}
+                  {drink.verified_at && (
+                    <span> · checked {new Date(drink.verified_at).toLocaleDateString()}</span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

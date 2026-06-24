@@ -1,4 +1,7 @@
-# Production Yelp Ingestion Guide
+# Historical Production Yelp Ingestion Guide
+
+> This runbook targets the retired AWS/DynamoDB architecture. Do not use it for
+> current production. Current production uses Vercel Functions and Neon PostgreSQL.
 
 High-coverage ingestion of real cafe metadata from the official Yelp Fusion API
 into the production DynamoDB table (`matcha_scout_prod`).

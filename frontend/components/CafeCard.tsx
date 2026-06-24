@@ -44,28 +44,112 @@ export default function CafeCard({ cafe }: Props) {
               {cafe.location}
             </div>
           </div>
-          {cafe.source === "yelp" && (
-            <span
-              style={{
-                fontSize: 10.5,
-                fontWeight: 600,
-                color: "#d32323",
-                background: "#fef0f0",
-                border: "1px solid #f8d0d0",
-                padding: "2px 8px",
-                borderRadius: 999,
-                flexShrink: 0,
-              }}
-            >
-              Yelp
-            </span>
-          )}
+          <div className="flex gap-1.5 items-center flex-shrink-0">
+            {cafe.beli_rating != null && (
+              <span
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 600,
+                  color: "#ffffff",
+                  background: "#1e293b",
+                  border: "1px solid #0f172a",
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  flexShrink: 0,
+                }}
+              >
+                Beli: {cafe.beli_rating.toFixed(1)}
+              </span>
+            )}
+            {cafe.is_popup && (
+              <span
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 600,
+                  color: "#d97706",
+                  background: "#fef3c7",
+                  border: "1px solid #fde68a",
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  flexShrink: 0,
+                }}
+              >
+                Pop-up
+              </span>
+            )}
+            {cafe.business_status && cafe.business_status !== "open" && (
+              <span
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 600,
+                  color: cafe.business_status === "upcoming" ? "#7c3aed" : "#9a3412",
+                  background: cafe.business_status === "upcoming" ? "#f3e8ff" : "#fff7ed",
+                  border: `1px solid ${cafe.business_status === "upcoming" ? "#e9d5ff" : "#fed7aa"}`,
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  textTransform: "capitalize",
+                  flexShrink: 0,
+                }}
+              >
+                {cafe.business_status}
+              </span>
+            )}
+            {cafe.ceremonial_matcha && (
+              <span
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 600,
+                  color: "#44563a",
+                  background: "#edf3e5",
+                  border: "1px solid #cdd9b8",
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  flexShrink: 0,
+                }}
+              >
+                Ceremonial
+              </span>
+            )}
+            {cafe.source === "yelp" && (
+              <span
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 600,
+                  color: "#d32323",
+                  background: "#fef0f0",
+                  border: "1px solid #f8d0d0",
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  flexShrink: 0,
+                }}
+              >
+                Yelp
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Address */}
         {cafe.address && (
           <p style={{ fontSize: 12.5, color: "#585e4d", margin: 0, lineHeight: 1.5 }}>
             {cafe.address}
+          </p>
+        )}
+
+        {cafe.menu_summary && (
+          <p
+            style={{
+              fontSize: 12.5,
+              color: "#585e4d",
+              margin: 0,
+              lineHeight: 1.5,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {cafe.menu_summary}
           </p>
         )}
 

@@ -113,7 +113,7 @@ export default function ReviewTargetsClient({ targets }: Props) {
                       </p>
                     </div>
                     <span className="ms-mono" style={{ fontSize: 18, color: "#44563a", flexShrink: 0 }}>
-                      ${target.price.toFixed(2)}
+                      {target.price == null ? "Price unavailable" : `$${target.price.toFixed(2)}`}
                     </span>
                   </div>
 

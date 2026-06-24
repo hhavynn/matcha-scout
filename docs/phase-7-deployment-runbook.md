@@ -1,7 +1,6 @@
 # Phase 7 — Deployment Runbook
 
-> ✅ **Phase 7 is COMPLETE.** The AWS backend is deployed and live.
-> This document is preserved as a record of what was done and as a reference for Phase 8.
+> **Historical architecture only.** This records the retired AWS Lambda/API Gateway/DynamoDB deployment. Current production is Next.js and FastAPI on Vercel with Neon PostgreSQL. Do not use this runbook for current releases.
 
 ## Deployment record
 

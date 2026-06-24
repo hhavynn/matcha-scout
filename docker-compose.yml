@@ -32,6 +32,7 @@ services:
       - ./backend/app:/app/app       # Hot-reload: local app code changes reflect immediately
       - ./backend/tests:/app/tests   # Hot-reload: test changes reflect immediately
       - ./data:/app/data:ro          # Curation JSON files (read-only inside container)
+      - ./data/backups:/app/data/backups # Verified sync backups/reports (gitignored, writable)
     depends_on:
       postgres:
         condition: service_healthy

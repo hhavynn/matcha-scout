@@ -2,7 +2,9 @@
 
 AI-powered matcha discovery app that turns free-text reviews into taste profiles and ranks cafe drinks against a user's preferences.
 
-> Sample data notice: all cafe names, drink names, prices, and descriptions are fictional and for demonstration only.
+> Data notice: café metadata comes from official sources and the Yelp Fusion API;
+> exact drinks are curated from primary menus. Taste profiles come only from
+> Matcha Scout community reviews.
 
 ## Live Demo
 

@@ -13,8 +13,8 @@
 - Allow user-submitted cafes and drinks.
 - Add a moderation queue for submitted cafes, drinks, and reviews.
 - Add rate limiting and spam protection for review submission.
-- Add CI/CD for backend tests, frontend lint/build, and deployment checks.
-- Tighten IAM permissions and document least-privilege policies.
+- Add automated preview deployment checks to the existing test/build CI.
+- Tighten production access and document least-privilege policies.
 
 ## Out Of Scope For Now
 

@@ -216,7 +216,7 @@ function RecCard({
             <div style={{ fontSize: 12.5, color: "#8c8a78", marginTop: 3 }}>{result.cafe_name}</div>
           )}
           <div className="ms-mono" style={{ fontSize: 13, color: "#44563a", marginTop: 5, fontWeight: 500 }}>
-            ${result.price.toFixed(2)}
+            {result.price == null ? "Price unavailable" : `$${result.price.toFixed(2)}`}
           </div>
         </div>
 

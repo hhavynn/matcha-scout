@@ -2,15 +2,15 @@
 
 ## A. SWE Internship Version
 
-- Built and deployed Matcha Scout, an AI-powered matcha recommendation app using Next.js, TypeScript, FastAPI, DynamoDB, AWS Lambda/API Gateway, and Vercel.
+- Built and deployed Matcha Scout, an AI-powered matcha recommendation app using Next.js, TypeScript, FastAPI on Vercel Functions, and Neon PostgreSQL.
 - Implemented a deterministic ranking engine that scores drinks across 5 taste dimensions and returns explainable match percentages, filters, and recommendation reasons.
-- Added production and local DevOps workflows, including Docker Compose, AWS SAM deployment, and verified kind Kubernetes manifests for local cluster demos.
+- Added production and local DevOps workflows including Vercel deployments, Neon-backed persistence, Docker Compose, CI, and verified kind manifests for local cluster demos.
 
 ## B. Backend / Cloud-Heavy Version
 
-- Developed a FastAPI backend for cafe/drink recommendations with Pydantic models, DynamoDB single-table access patterns, review ingestion, taste profile aggregation, and recommendation APIs.
-- Deployed the backend on AWS Lambda behind API Gateway with Mangum and DynamoDB, using cost-conscious serverless architecture instead of EC2, RDS, EKS, or NAT Gateway.
-- Validated backend behavior with 29 pytest tests covering mock AI parsing, aggregation, ranking, filtering, and recommendation result structure.
+- Developed a FastAPI backend for café/drink recommendations with Pydantic models, Neon PostgreSQL persistence, review ingestion, taste-profile aggregation, and recommendation APIs.
+- Deployed the backend on Vercel Functions with pooled Neon PostgreSQL and guarded, backup-first production data reconciliation.
+- Validated backend behavior with 180+ pytest tests covering parsing, aggregation, ranking, ingestion safety, and API behavior.
 
 ## C. AI / Product-Heavy Version
 
@@ -20,11 +20,11 @@
 
 ## D. DevOps / Kubernetes-Heavy Version
 
-- Added Docker Compose local development and Dockerfiles for a full-stack FastAPI/Next.js/DynamoDB Local application.
+- Added Docker Compose local development and Dockerfiles for a full-stack FastAPI/Next.js/PostgreSQL application.
 - Authored local-only Kubernetes manifests for kind, including namespace, ConfigMap, Secret example, deployments, services, image loading, seeding, and port-forward smoke tests.
 - Verified the local Kubernetes workflow end to end by building images, loading them into kind, applying manifests, seeding DynamoDB Local, and testing API/frontend routes.
 
 ## E. Ultra-Compressed 2-Bullet Version
 
-- Built and deployed an AI-powered matcha recommender with Next.js, FastAPI, DynamoDB, AWS Lambda/API Gateway, Vercel, and Gemini-compatible structured review parsing.
-- Implemented explainable recommendation scoring plus Docker Compose and verified kind Kubernetes workflows, with backend behavior covered by 29 pytest tests.
+- Built and deployed an AI-powered matcha recommender with Next.js, FastAPI on Vercel Functions, Neon PostgreSQL, and Gemini-compatible structured review parsing.
+- Implemented explainable recommendation scoring plus guarded research ingestion, Docker Compose, CI, and verified local kind workflows.

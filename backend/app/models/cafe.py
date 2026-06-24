@@ -24,6 +24,15 @@ class Cafe(BaseModel):
     last_ingested_at: Optional[datetime] = None
     region_key: Optional[str] = None
     region_label: Optional[str] = None
+    is_popup: Optional[bool] = None
+    beli_rating: Optional[float] = None
+    menu_url: Optional[str] = None
+    menu_summary: Optional[str] = None
+    menu_verified_at: Optional[datetime] = None
+    ceremonial_matcha: Optional[bool] = None
+    research_label: Optional[str] = None
+    business_status: Optional[str] = None
+    status_note: Optional[str] = None
 
 
 class ExternalReviewExcerpt(BaseModel):

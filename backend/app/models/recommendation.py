@@ -30,7 +30,7 @@ class RecommendationResult(BaseModel):
     drink_name: str
     cafe_id: str
     cafe_name: Optional[str] = None
-    price: float
+    price: Optional[float] = None
     milk_options: List[str]
     taste_profile: TasteProfileSnapshot
     match_score: float

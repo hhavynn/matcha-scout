@@ -2,7 +2,7 @@
 
 Phase 9 adds a local-only Kubernetes path for learning, demos, and resume proof. It runs Matcha Scout in a kind cluster on your machine.
 
-This is not a production deployment. It does not use AWS EKS, does not change the live AWS Lambda/API Gateway/DynamoDB backend, and does not change the Vercel frontend. Production still runs on AWS Lambda + API Gateway + DynamoDB and Vercel.
+This is not a production deployment. It is a historical local learning path and does not change the current Vercel frontend, FastAPI Vercel Functions backend, or Neon PostgreSQL production database.
 
 ## Why This Exists
 

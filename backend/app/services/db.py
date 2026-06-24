@@ -239,6 +239,29 @@ def put_item(item: dict) -> None:
     table.put_item(Item=item)
 
 
+def delete_partition(pk: str) -> int:
+    """Delete every item in a partition and return the number removed."""
+    if using_postgres():
+        table_name = _safe_table_name()
+        with _postgres_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"DELETE FROM {table_name} WHERE pk = %s",
+                    (pk,),
+                )
+                return cursor.rowcount
+
+    items = query_by_pk(pk)
+    if not items:
+        return 0
+
+    table = get_table()
+    with table.batch_writer() as batch:
+        for item in items:
+            batch.delete_item(Key={"PK": item["PK"], "SK": item["SK"]})
+    return len(items)
+
+
 def scan_by_sk(sk_value: str) -> list[dict]:
     """Scan for all items with a specific SK value — used to fetch all taste profiles."""
     if using_postgres():
@@ -258,9 +281,14 @@ def scan_by_sk(sk_value: str) -> list[dict]:
     return response.get("Items", [])
 
 
+def is_catalog_visible(item: dict) -> bool:
+    return item.get("catalog_status") != "excluded"
+
+
 def get_all_drinks_with_profiles() -> list[dict]:
     """Return a list of dicts each merging a drink METADATA item with its TASTE_PROFILE.
-    Drinks without a taste profile are excluded (no data to rank against)."""
+    Drinks without Matcha Scout reviews are excluded: neutral initialization
+    values are placeholders, not recommendation evidence."""
     drink_items = scan_by_entity_type("DRINK")
     profile_items = scan_by_sk("TASTE_PROFILE")
 
@@ -269,9 +297,11 @@ def get_all_drinks_with_profiles() -> list[dict]:
 
     result = []
     for drink in drink_items:
+        if not is_catalog_visible(drink):
+            continue
         drink_id = drink["drink_id"]
         profile = profiles_by_drink_id.get(drink_id)
-        if profile:
+        if profile and int(profile.get("review_count", 0)) > 0:
             result.append({**drink, "profile": profile})
     return result
 

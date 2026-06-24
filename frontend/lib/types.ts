@@ -17,6 +17,15 @@ export interface Cafe {
   last_ingested_at?: string;
   region_key?: string;
   region_label?: string;
+  is_popup?: boolean;
+  beli_rating?: number;
+  menu_url?: string;
+  menu_summary?: string;
+  menu_verified_at?: string;
+  ceremonial_matcha?: boolean;
+  research_label?: string;
+  business_status?: string;
+  status_note?: string;
 }
 
 export interface Drink {
@@ -24,7 +33,7 @@ export interface Drink {
   cafe_id: string;
   name: string;
   description: string;
-  price: number;
+  price: number | null;
   milk_options: string[];
   is_iced: boolean | null;
   is_hot: boolean | null;
@@ -32,6 +41,13 @@ export interface Drink {
   created_at: string;
   source?: string;
   verification_status?: string;
+  verification_source?: string;
+  verification_url?: string;
+  verification_notes?: string;
+  verified_at?: string;
+  catalog_status?: string;
+  exclusion_reason?: string;
+  excluded_at?: string;
   submitted_at?: string;
   submitted_by_session?: string;
 }
@@ -100,7 +116,7 @@ export interface RecommendationResult {
   drink_name: string;
   cafe_id: string;
   cafe_name?: string;
-  price: number;
+  price: number | null;
   milk_options: string[];
   taste_profile: {
     matcha_strength: number;

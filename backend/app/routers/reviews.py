@@ -14,7 +14,7 @@ router = APIRouter(tags=["reviews"])
 def submit_review(body: ReviewCreate):
     # Verify the drink exists
     drink = db.get_item(pk=f"DRINK#{body.drink_id}", sk="METADATA")
-    if not drink:
+    if not drink or not db.is_catalog_visible(drink):
         raise HTTPException(status_code=404, detail=f"Drink '{body.drink_id}' not found")
 
     # Parse review through AI (mock or Gemini)
@@ -69,7 +69,7 @@ def submit_review(body: ReviewCreate):
 def list_reviews(drink_id: str):
     # Verify the drink exists
     drink = db.get_item(pk=f"DRINK#{drink_id}", sk="METADATA")
-    if not drink:
+    if not drink or not db.is_catalog_visible(drink):
         raise HTTPException(status_code=404, detail=f"Drink '{drink_id}' not found")
 
     items = db.list_reviews_for_drink(drink_id)

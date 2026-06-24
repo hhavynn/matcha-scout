@@ -1,6 +1,7 @@
 # Matcha Scout — Local QA Checklist
 
-Use this before deploying to AWS or recording a demo video.
+Use this before deploying the Vercel frontend/backend, applying a Neon
+reconciliation, or recording a demo video.
 
 ---
 
@@ -9,11 +10,13 @@ Use this before deploying to AWS or recording a demo video.
 All of these must be true before starting:
 
 - [ ] Docker Desktop is running
-- [ ] `docker compose ps` shows both `matcha-api` (port 8000) and `matcha-dynamodb` (port 8001) as healthy
-- [ ] `docker compose exec api python -m app.seed.create_tables` has been run once
+- [ ] `docker compose ps` shows `matcha-api` and PostgreSQL as healthy
+- [ ] Database migrations/schema setup have completed
 - [ ] `docker compose exec api python -m app.seed.seed_data` has been run
 - [ ] `cd frontend && npm run dev` is running at `http://localhost:3000`
-- [ ] Backend tests pass: `docker compose exec api pytest tests/ -v` → 29 passed
+- [ ] Backend tests pass: `docker compose exec -T api pytest -q`
+- [ ] Frontend checks pass: `cd frontend && npm run lint && npm run build`
+- [ ] Research artifacts pass `python3 -m app.ingest.validate_research_artifacts`
 
 ---
 
@@ -32,25 +35,25 @@ Open `http://localhost:3000` in a browser (Chrome or Safari recommended).
 
 ### Browse drinks `/drinks`
 
-- [ ] Page loads with a list of 10 drink cards
-- [ ] Each card shows: drink name, cafe name, price, description, milk tags
+- [ ] Page loads with the current visible drink catalog
+- [ ] Each card shows: drink name, cafe name, price or "Price unavailable", description, milk tags
 - [ ] Cards show "iced" / "hot" badges where appropriate
-- [ ] Clicking a card navigates to `/drinks/drink-001` (or whichever was clicked)
+- [ ] Clicking a card navigates to that drink's detail route
+- [ ] Soft-excluded drinks do not appear
 - [ ] Page is readable on mobile (cards stack to single column)
 
-### Drink detail `/drinks/drink-001`
+### Drink detail
 
-- [ ] Page loads showing "Stone Garden Ceremonial" with price $6.50
-- [ ] Cafe name "Verdant Cup" appears below the drink name
+- [ ] A current drink route loads with its expected name, café, and price state
 - [ ] Taste profile bars display (Matcha Strength, Sweetness, etc.)
 - [ ] "Seed data — no reviews yet" message shows in taste profile section (before any reviews)
 - [ ] Review form textarea is visible with placeholder text
 - [ ] "Submit Review" button is visible but disabled (textarea is empty)
-- [ ] Try a drink with oat milk (e.g., `/drinks/drink-002`) — "oat" tag shows
+- [ ] Try a drink with oat milk — the "oat" tag shows
 
 ### Submitting a review
 
-On `/drinks/drink-001`:
+On a visible drink detail page:
 
 1. Type a short review: `"Strong earthy ceremonial matcha, a little bitter but smooth"`
 2. - [ ] "Submit Review" button becomes enabled after 10+ characters
@@ -81,7 +84,7 @@ On `/drinks/drink-001`:
 1. Leave all sliders at 3 (defaults)
 2. Click "Find My Matcha"
 3. - [ ] Spinner appears while loading
-4. - [ ] Results appear showing 8+ drink cards with match percentages
+4. - [ ] Results appear showing drink cards with match percentages
 5. - [ ] Each result shows: match % badge, drink name, cafe name, price, ✓ reasons, taste bars, milk tags
 6. - [ ] "View details →" link works on each result
 7. - [ ] Results are sorted highest match first
@@ -90,15 +93,14 @@ On `/drinks/drink-001`:
 
 1. Set Matcha Strength = 5, Sweetness = 1, Earthiness = 5
 2. Click "Find My Matcha"
-3. - [ ] "Stone Garden Ceremonial" or "High Altitude Ceremonial" appears near the top (high match)
-4. - [ ] "Strawberry Matcha Refresher" or "Brown Sugar Matcha" appears near the bottom (low match)
+3. - [ ] Strong, earthy drinks rank above sweet, mild drinks with otherwise equal filters
 
 ### Quiz submission (filters)
 
 1. Set Max Price = 6.00
 2. Click "Find My Matcha"
-3. - [ ] Only drinks at $6.00 or under appear (Kocha Classic at $5.50, Stone Garden at $6.50 should be filtered out or not)
-   - Note: $6.50 > $6.00 so Stone Garden should NOT appear
+3. - [ ] Only drinks with known prices at or below $6.00 appear
+   - Drinks with unknown prices must not bypass a maximum-price filter
 
 4. Set Milk = "oat", Max Price = (blank)
 5. Click "Find My Matcha"
@@ -115,8 +117,8 @@ On `/drinks/drink-001`:
 ## Screenshots to take (for README / resume)
 
 1. **Landing page** — full desktop view showing hero section
-2. **Drinks grid** — `/drinks` showing all 10 cards in 3-column layout
-3. **Drink detail** — `/drinks/drink-001` showing taste bars and empty review form
+2. **Drinks grid** — `/drinks` showing the current catalog in a 3-column layout
+3. **Drink detail** — a current drink showing taste bars and empty review form
 4. **Review submission result** — green success card with 5 parsed taste boxes and tags
 5. **Quiz page** — sliders on left, recommendation results on right (desktop)
 6. **Quiz recommendation card** — close-up showing match %, reasons, taste bars
@@ -132,7 +134,6 @@ docker compose up --build -d
 ```
 Wait 10 seconds, then reseed:
 ```bash
-docker compose exec api python -m app.seed.create_tables
 docker compose exec api python -m app.seed.seed_data
 ```
 
@@ -145,10 +146,10 @@ The backend is not running or the API URL is wrong.
 ### Taste profile bars don't update after review
 The backend may have returned stale data or the refresh failed silently. Refresh the browser page manually — the server will re-fetch the updated profile.
 
-### DynamoDB data missing
-Each `docker compose down` wipes DynamoDB (it's in-memory). Run:
+### PostgreSQL data missing
+Check the PostgreSQL container and reseed local development data if appropriate:
 ```bash
-docker compose exec api python -m app.seed.create_tables
+docker compose ps
 docker compose exec api python -m app.seed.seed_data
 ```
 

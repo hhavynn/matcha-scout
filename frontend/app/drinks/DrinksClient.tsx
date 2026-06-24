@@ -20,6 +20,13 @@ const SORTS = [
   { value: "priceHigh",label: "Price ↓" },
 ];
 
+function comparePrice(a: Drink, b: Drink, direction: "asc" | "desc") {
+  if (a.price == null && b.price == null) return 0;
+  if (a.price == null) return 1;
+  if (b.price == null) return -1;
+  return direction === "asc" ? a.price - b.price : b.price - a.price;
+}
+
 interface Props {
   drinks: Drink[];
   cafeMap: Record<string, string>;
@@ -40,8 +47,8 @@ export default function DrinksClient({ drinks, cafeMap }: Props) {
       }
       return true;
     });
-    if (sort === "priceLow") list = [...list].sort((a, b) => a.price - b.price);
-    if (sort === "priceHigh") list = [...list].sort((a, b) => b.price - a.price);
+    if (sort === "priceLow") list = [...list].sort((a, b) => comparePrice(a, b, "asc"));
+    if (sort === "priceHigh") list = [...list].sort((a, b) => comparePrice(a, b, "desc"));
     return list;
   }, [drinks, filter, query, sort, cafeMap]);
 

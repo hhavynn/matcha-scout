@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "checked_at": "2026-06-24",
+  "source_report": "/Users/havyn/Downloads/deep-research-report (1).md",
+  "source_limitations": "The report's linked JSON/CSV exports were not attached. This artifact contains the 44 concepts reconstructable from the report text and applies metadata only where the text supplies a sufficiently specific primary-source finding.",
+  "cafes": [
+    {
+      "name": "Labora",
+      "cafe_id": "yelp-dqrcwtf6575theg7r5vdfg",
+      "address": "8055 Clairemont Mesa Blvd, Ste 101, San Diego, CA 92111",
+      "classification": "verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://laboracafe.com/",
+        "menu_url": "https://laboracafe.com/menu",
+        "menu_summary": "Current official menu documents ten matcha preparations with exact names and prices.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official menu",
+        "ceremonial_matcha": true,
+        "business_status": "open"
+      }
+    },
+    {
+      "name": "Little While",
+      "cafe_id": "yelp-qwvdx0h1yqweolvegpnfna",
+      "address": "3019 Adams Ave, San Diego, CA 92116",
+      "classification": "verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://www.littlewhilesd.com/",
+        "menu_url": "https://www.littlewhilesd.com/menu",
+        "menu_summary": "Current official menu lists four matcha items and warns that offerings change frequently.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official menu",
+        "business_status": "open",
+        "status_note": "Official site currently lists Monday–Thursday 7am–2pm and Friday–Sunday 7am–4pm."
+      }
+    },
+    {
+      "name": "Bopomofo Cafe",
+      "cafe_id": "yelp-pixshlytcxxnrh3veczjba",
+      "address": "7951 Othello Ave, Ste 106, San Diego, CA 92111",
+      "classification": "verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://www.bopomofocafe.com/pages/san-diego",
+        "menu_url": "https://www.bopomofocafe.com/menu",
+        "menu_summary": "The current official Premium Matcha section lists five drinks; public prices are not shown.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official location and menu pages",
+        "business_status": "open",
+        "status_note": "San Diego location is cashless and the official location page lists daily 11am–9pm hours."
+      }
+    },
+    {
+      "name": "Matcha Cafe Maiko",
+      "cafe_id": "yelp-atxbqaz7yllcmxljoqiwcw",
+      "address": "8072 Clairemont Mesa Blvd, San Diego, CA 92111",
+      "classification": "partially_verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://www.matchacafe-maiko.com/eng/stores/san-diego/",
+        "menu_url": "https://www.matchacafe-maiko.com/eng/menu/",
+        "menu_summary": "The official chain menu is broad, but it explicitly warns that item availability varies by store.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official San Diego store page and chain menu",
+        "business_status": "open",
+        "status_note": "Call the San Diego store for current hours and store-specific item availability."
+      }
+    },
+    {
+      "name": "Lovesong Coffee",
+      "cafe_id": "yelp-snziucfu61i7lwcg7o0zga",
+      "address": "3022 N Park Way, San Diego, CA 92104",
+      "classification": "verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://www.lovesongcoffee.com/",
+        "menu_url": "https://www.lovesongcoffee.com/lovesong-menu",
+        "menu_summary": "The current official Top Shelf Matcha section lists nine drinks at $7.50 each.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official menu",
+        "business_status": "open"
+      }
+    },
+    {
+      "name": "Communal",
+      "cafe_id": "yelp-iykfvpgkbrkju8-ueoweaa",
+      "address": "2335 University Ave, San Diego, CA 92104",
+      "classification": "partially_verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://communalcoffee.com/pages/locations",
+        "menu_summary": "The official site confirms multiple Southern California locations; this record is the North Park location.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official locations page",
+        "business_status": "open"
+      }
+    },
+    {
+      "name": "Mostra Coffee",
+      "cafe_id": "yelp-hk5urmoqp0tm2oqkwaxgqg",
+      "address": "3921 Normal St, San Diego, CA 92103",
+      "classification": "partially_verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://mostracoffee.com/pages/locations",
+        "menu_summary": "The official site confirms five San Diego locations; this record is the Hillcrest location.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official locations page",
+        "business_status": "open"
+      }
+    },
+    {
+      "name": "Rikka Fika",
+      "cafe_id": "yelp-w5jokeeoj5qejdmaztou3w",
+      "address": "810 13th St, San Diego, CA 92101",
+      "classification": "partially_verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://rikkafika.com/",
+        "menu_url": "https://rikkafika.com/pages/drink-menu",
+        "menu_summary": "Official site confirms coffee and matcha service, but the linked drink-menu page did not expose a usable current item list.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official website",
+        "business_status": "open"
+      }
+    },
+    {
+      "name": "Flour Atelier",
+      "cafe_id": "custom-flour-atelier",
+      "address": "4240 Kearny Mesa Rd #116, San Diego, CA 92111",
+      "classification": "partially_verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://www.flouratelier.com/",
+        "menu_summary": "Official site confirms the Kearny Mesa location and hours, but no crawlable current matcha menu was available.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official website",
+        "business_status": "open"
+      }
+    },
+    {
+      "name": "Selva Coffee House",
+      "cafe_id": "yelp-44znqntb4zho4dhchrdjsa",
+      "address": "3535 Camino Del Rio W, San Diego, CA 92110",
+      "classification": "partially_verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://www.selvacoffeehouse.com/",
+        "menu_summary": "Official site confirms the Midway location as open and identifies a separate Del Mar location as coming soon.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official website",
+        "business_status": "open",
+        "status_note": "This record is Midway. Do not merge it with the separate upcoming Del Mar location."
+      }
+    },
+    {
+      "name": "Chance’s Coffee",
+      "cafe_id": "yelp-bv40bfy-xgxljz2cqoyfya",
+      "address": "2311 El Cajon Blvd, San Diego, CA 92104",
+      "classification": "partially_verified",
+      "match_strategy": "internal_id_and_address",
+      "updates": {
+        "website": "https://www.chancescoffee.com/",
+        "menu_summary": "Official site confirms the business and contact details, but its linked menu was not available as a stable crawlable source.",
+        "menu_verified_at": "2026-06-24",
+        "research_label": "Official website",
+        "business_status": "open"
+      }
+    },
+    {"name": "12 Hrs Matcha Cafe", "cafe_id": "yelp-rqsjpvpx7tziwxbtnmgesa", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Current primary-source menu details were not recovered in the report."},
+    {"name": "Galu Cafe and Delicatessen", "cafe_id": "yelp-inm3vouow1baosjzi7vkuw", "aliases": ["Galu Cafe"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Cafe Alessie", "cafe_id": "yelp-ve5hej3dz-iwxczvs81gmq", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "The new report did not validate its prior imported menu data."},
+    {"name": "Easy Does It", "cafe_id": "yelp-cfxbcmhvkouozwot7e9r4q", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Gotcha Tea", "cafe_id": "yelp-ls0dq-tqnrmxj0ovsjsbrq", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a store-specific primary source."},
+    {"name": "Tori Cafe", "cafe_id": "yelp-3a5sha8vhi3teuycmrfvxa", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Boba Religion", "cafe_id": "yelp-ueexx8i1cvwqqusjuad1lq", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "The new report did not validate its prior imported menu data."},
+    {"name": "ESSNTL Coffee", "cafe_id": "yelp-f2hywqzcrkngdhleilt9aw", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Camellia Rd Tea Bar", "cafe_id": "yelp-po7okh9bmoy-qwhvjbccqg", "aliases": ["Camellia Road"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "KAFE'SITO", "cafe_id": "yelp-xxpt4w6weqw2nm0qdblyuw", "aliases": ["KAFE’SITO"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Official domain resolved but did not expose usable menu text."},
+    {"name": "The Barista Botanist", "cafe_id": "yelp-lqg4gyf9j2ul-q17oqpttg", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Hatsuzakura", "cafe_id": "yelp-fx4lbw3ifgjfvw20yrteeq", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "The Cakery Cafe", "cafe_id": "yelp-locrvcngxhiqiq-ivuyuva", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Hydout Cafe", "cafe_id": "yelp-8jwiopyyyquhjfcahombtq", "aliases": ["Hydout"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Marta", "cafe_id": "yelp-t-0iwxdsq-pzaz5u02kn4a", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Cristallo Cafe", "cafe_id": "yelp-mwrsyrjxg-uz-zxka5p-q", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Cafe 88", "cafe_id": "yelp-j8geghybboa900faj6ntzg", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Casa De Otay", "cafe_id": "yelp-wn2qj9gysi-ckpc-0whlg", "aliases": ["Casa de Otay"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Yaqui Coffee House", "cafe_id": "yelp-a1kwyqbbkbt6hfhr8vmg9q", "aliases": ["Yaqui"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Nomade", "cafe_id": "yelp-x9-i1lv6pbxhlotdnrb70q", "aliases": ["Nomad"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Name spelling differs from the report; needs primary-source confirmation."},
+    {"name": "Friends of Friends", "cafe_id": "yelp-a4nz1ju8q-4iwv07df-3yq", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Despertar Coffee", "cafe_id": "yelp-yalcq17555r9m5v0zu1szw", "aliases": ["Despertar"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Needs a current official menu check."},
+    {"name": "Drift Cafe", "cafe_id": "yelp-f5zpt-0u-bzhwtxds-txbq", "aliases": ["Drift Coffee"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Report and database names differ; needs primary-source confirmation."},
+    {"name": "Forum Coffee", "cafe_id": "yelp-xmztgwe8mtgtlrybkwevlg", "aliases": ["The Forum Coffee House"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Report and database names differ; needs primary-source confirmation."},
+    {"name": "Morning Dew", "cafe_id": "yelp-anwlltnr4ol7p8bhlzvjrq", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Pop-up status exists locally; current schedule and menu need confirmation."},
+    {"name": "Kubo Coffee", "cafe_id": "yelp-s20iglgsjtnagoo33lx-wg", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Pop-up status exists locally; current schedule and menu need confirmation."},
+    {"name": "Kaphe Muna", "cafe_id": "yelp-wkxkzv68h-3erufvusekra", "aliases": ["Kaphé Muna"], "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Pop-up status exists locally; current schedule and menu need confirmation."},
+    {"name": "Hey Midori", "cafe_id": "custom-heymidori", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Pop-up status exists locally; current schedule and menu need confirmation."},
+    {"name": "Prosperitea", "cafe_id": "custom-prosperitea", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Pop-up status exists locally; current schedule and menu need confirmation."},
+    {
+      "name": "Urban Matcha",
+      "cafe_id": "yelp-iovtfdskgvm6sdapvlpsow",
+      "classification": "conflicting",
+      "match_strategy": "internal_id",
+      "follow_up": "The report models the concept as upcoming from secondary reporting, while the local record already has a Convoy address. Do not mark it open or upcoming without a same-day primary-source check.",
+      "updates": {
+        "business_status": "uncertain",
+        "status_note": "Current operating status is unresolved: the research describes an upcoming expansion, while this record already has a Convoy address."
+      }
+    },
+    {
+      "name": "J.sweets San Diego (Inside Mitsuwa)",
+      "cafe_id": "custom-jsweets-yamari",
+      "aliases": ["J.Sweets / Yamari Matcha (Inside Mitsuwa)"],
+      "address": "4240 Kearny Mesa Rd, San Diego, CA 92111",
+      "classification": "verified",
+      "match_strategy": "internal_id",
+      "follow_up": "Official J.sweets locations list San Diego inside Mitsuwa; official YAMARI locations list Torrance and Cypress, not San Diego.",
+      "updates": {
+        "name": "J.sweets San Diego (Inside Mitsuwa)",
+        "website": "https://jsweetsstore.com/pages/locations",
+        "business_status": "open",
+        "status_note": "Official locations identify this as J.sweets San Diego. No separate San Diego YAMARI location is currently listed."
+      }
+    },
+    {"name": "Holy Matcha", "cafe_id": "yelp-lgvxtnsraj9sg1rparcrkw", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Included in the reconstructed 44-concept target set; the report text contains no current primary-source finding."},
+    {"name": "Kyoto Coast Matcha", "cafe_id": "yelp-ev-kuco0hutthg45tavgqw", "classification": "unverified", "match_strategy": "internal_id", "follow_up": "Included in the reconstructed 44-concept target set; the report text contains no current primary-source finding."}
+  ]
+}

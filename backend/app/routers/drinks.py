@@ -16,7 +16,7 @@ def _item_to_drink(item: dict) -> Drink:
         cafe_id=item["cafe_id"],
         name=item["name"],
         description=item.get("description", ""),
-        price=float(item.get("price", 0)),
+        price=float(item["price"]) if item.get("price") is not None else None,
         milk_options=item.get("milk_options", []),
         is_iced=item.get("is_iced"),
         is_hot=item.get("is_hot"),
@@ -24,6 +24,13 @@ def _item_to_drink(item: dict) -> Drink:
         created_at=item["created_at"],
         source=item.get("source"),
         verification_status=item.get("verification_status"),
+        verification_source=item.get("verification_source"),
+        verification_url=item.get("verification_url"),
+        verification_notes=item.get("verification_notes"),
+        verified_at=item.get("verified_at"),
+        catalog_status=item.get("catalog_status"),
+        exclusion_reason=item.get("exclusion_reason"),
+        excluded_at=item.get("excluded_at"),
         submitted_at=item.get("submitted_at"),
         submitted_by_session=item.get("submitted_by_session"),
     )
@@ -76,9 +83,15 @@ def list_drinks(cafe_id: Optional[str] = Query(default=None)):
     if cafe_id:
         items = db.query_gsi(gsi_pk_value=f"CAFE#{cafe_id}")
         # GSI returns drinks for a cafe; filter to METADATA items only
-        items = [i for i in items if i.get("SK") == "METADATA"]
+        items = [
+            i for i in items
+            if i.get("SK") == "METADATA" and db.is_catalog_visible(i)
+        ]
     else:
-        items = db.scan_by_entity_type("DRINK")
+        items = [
+            i for i in db.scan_by_entity_type("DRINK")
+            if db.is_catalog_visible(i)
+        ]
     return [_item_to_drink(item) for item in items]
 
 
@@ -94,6 +107,8 @@ def list_review_targets(
     targets = []
 
     for item in drinks:
+        if not db.is_catalog_visible(item):
+            continue
         if not _is_verified_review_target(item):
             continue
 
@@ -130,7 +145,7 @@ def list_review_targets(
 @router.get("/{drink_id}", response_model=Drink)
 def get_drink(drink_id: str):
     item = db.get_item(pk=f"DRINK#{drink_id}", sk="METADATA")
-    if not item:
+    if not item or not db.is_catalog_visible(item):
         raise HTTPException(status_code=404, detail=f"Drink '{drink_id}' not found")
     return _item_to_drink(item)
 

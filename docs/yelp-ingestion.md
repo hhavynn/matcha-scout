@@ -1,5 +1,9 @@
 # Yelp San Diego Cafe Ingestion
 
+> **Historical local ingestion path.** This document describes the retained
+> DynamoDB adapter and is not the current PostgreSQL/Neon Deep Research release
+> workflow. Do not use it for production writes.
+
 Phase 11 adds a local/admin ingestion path for real San Diego cafe metadata using the official Yelp Fusion API.
 
 This does not scrape Yelp, Beli, Google Maps, or any browser-rendered pages. Beli, if used later, should be manual future input only; no scraping.

@@ -150,6 +150,8 @@ def normalize_entry(entry: dict[str, Any]) -> dict[str, Any]:
         out["verification_url"] = str(out["verification_url"]).strip()
     if out.get("verification_notes"):
         out["verification_notes"] = str(out["verification_notes"]).strip()
+    if out.get("verified_at"):
+        out["verified_at"] = str(out["verified_at"]).strip()
     return out
 
 
@@ -252,13 +254,14 @@ def process_entry(
         "cafe_id": cafe_id,
         "name": entry["name"],
         "description": entry.get("description") or "",
-        "price": Decimal(str(entry["price"])) if entry.get("price") is not None else Decimal("0"),
+        "price": Decimal(str(entry["price"])) if entry.get("price") is not None else None,
         "milk_options": entry.get("milk_options") or [],
         "source": "admin_curated",
         "verification_status": entry.get("verification_status", "admin_curated"),
         "verification_source": entry.get("verification_source") or "",
         "verification_url": entry.get("verification_url") or "",
         "verification_notes": entry.get("verification_notes") or entry.get("curation_notes") or "",
+        "verified_at": entry.get("verified_at"),
         "submitted_at": now,
         "created_at": now,
     }

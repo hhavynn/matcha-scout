@@ -72,8 +72,8 @@ def _build_reasons(
         if milk_lower in options_lower:
             priority_reasons.append(f"Available with {prefs.milk_type} milk")
 
-    price = float(drink["price"])
-    if prefs.price_max and price <= prefs.price_max:
+    price_value = drink.get("price")
+    if prefs.price_max and price_value is not None and float(price_value) <= prefs.price_max:
         priority_reasons.append(f"Under your ${prefs.price_max:.2f} budget")
 
     # Taste dimension reasons
@@ -112,11 +112,12 @@ def rank_drinks(
     for entry in drinks_with_profiles:
         drink = entry
         profile = entry["profile"]
-        price = float(drink["price"])
+        price_value = drink.get("price")
+        price = float(price_value) if price_value is not None else None
         milk_options: list[str] = drink.get("milk_options", [])
 
         # ── Hard filters ──────────────────────────────────────────────────────
-        if prefs.price_max is not None and price > prefs.price_max:
+        if prefs.price_max is not None and (price is None or price > prefs.price_max):
             continue
 
         if prefs.milk_type is not None:
@@ -161,6 +162,12 @@ def rank_drinks(
         ))
 
     # Primary sort: match_pct desc. Tiebreaker: confidence_score desc, then price asc.
-    results.sort(key=lambda r: (-r.match_pct, -(r.confidence_score or 0.0), r.price))
+    results.sort(
+        key=lambda r: (
+            -r.match_pct,
+            -(r.confidence_score or 0.0),
+            r.price if r.price is not None else float("inf"),
+        )
+    )
 
     return results[: prefs.limit]

@@ -216,11 +216,13 @@ def test_verification_metadata_normalized():
         "verification_source": " official_menu ",
         "verification_url": " https://menus.local/verdant ",
         "verification_notes": " Seen on menu. ",
+        "verified_at": " 2026-06-24 ",
     }
     result = normalize_entry(entry)
     assert result["verification_source"] == "official_menu"
     assert result["verification_url"] == "https://menus.local/verdant"
     assert result["verification_notes"] == "Seen on menu."
+    assert result["verified_at"] == "2026-06-24"
 
 
 def test_normalize_does_not_mutate_input():
@@ -363,6 +365,7 @@ def test_created_drink_preserves_verification_metadata(capsys):
         "verification_source": "official_menu",
         "verification_url": "https://menus.local/verdant",
         "verification_notes": "Verified from official menu.",
+        "verified_at": "2026-06-24",
     }
 
     with patch("app.ingest.manual_drink_curation.db") as mock_db:
@@ -381,6 +384,27 @@ def test_created_drink_preserves_verification_metadata(capsys):
     assert drink["verification_source"] == "official_menu"
     assert drink["verification_url"] == "https://menus.local/verdant"
     assert drink["verification_notes"] == "Verified from official menu."
+    assert drink["verified_at"] == "2026-06-24"
+
+
+def test_created_drink_preserves_unknown_price_as_null(capsys):
+    result = CurationResult()
+    created_items = []
+    entry = {**VALID_ENTRY, "price": None}
+
+    with patch("app.ingest.manual_drink_curation.db") as mock_db:
+        mock_db.get_item.return_value = SAMPLE_CAFE
+        mock_db.find_existing_drink_for_cafe.return_value = None
+        mock_db.create_admin_curated_drink.side_effect = lambda cid, d: created_items.append(d) or d
+        process_entry(
+            entry, 1,
+            applying=True,
+            allow_overwrite=False,
+            now="2026-06-05T00:00:00Z",
+            result=result,
+        )
+
+    assert created_items[0]["price"] is None
 
 
 def test_created_drink_milk_normalized(capsys):

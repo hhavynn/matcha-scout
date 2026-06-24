@@ -36,6 +36,15 @@ def _item_to_cafe(item: dict) -> Cafe:
         last_ingested_at=item.get("last_ingested_at"),
         region_key=item.get("region_key"),
         region_label=item.get("region_label"),
+        is_popup=item.get("is_popup", False),
+        beli_rating=float(item["beli_rating"]) if item.get("beli_rating") is not None else None,
+        menu_url=item.get("menu_url"),
+        menu_summary=item.get("menu_summary"),
+        menu_verified_at=item.get("menu_verified_at"),
+        ceremonial_matcha=item.get("ceremonial_matcha"),
+        research_label=item.get("research_label"),
+        business_status=item.get("business_status"),
+        status_note=item.get("status_note"),
     )
 
 
@@ -83,7 +92,7 @@ def _item_to_drink(item: dict) -> Drink:
         cafe_id=item["cafe_id"],
         name=item["name"],
         description=item.get("description", ""),
-        price=float(item.get("price", 0)),
+        price=float(item["price"]) if item.get("price") is not None else None,
         milk_options=item.get("milk_options", []),
         is_iced=item.get("is_iced"),
         is_hot=item.get("is_hot"),
@@ -91,6 +100,13 @@ def _item_to_drink(item: dict) -> Drink:
         created_at=item["created_at"],
         source=item.get("source"),
         verification_status=item.get("verification_status"),
+        verification_source=item.get("verification_source"),
+        verification_url=item.get("verification_url"),
+        verification_notes=item.get("verification_notes"),
+        verified_at=item.get("verified_at"),
+        catalog_status=item.get("catalog_status"),
+        exclusion_reason=item.get("exclusion_reason"),
+        excluded_at=item.get("excluded_at"),
         submitted_at=item.get("submitted_at"),
         submitted_by_session=item.get("submitted_by_session"),
     )
@@ -147,7 +163,11 @@ def list_cafe_drinks(cafe_id: str):
     if not cafe:
         raise HTTPException(status_code=404, detail=f"Cafe '{cafe_id}' not found")
     items = db.query_gsi(gsi_pk_value=f"CAFE#{cafe_id}")
-    return [_item_to_drink(i) for i in items if i.get("SK") == "METADATA"]
+    return [
+        _item_to_drink(i)
+        for i in items
+        if i.get("SK") == "METADATA" and db.is_catalog_visible(i)
+    ]
 
 
 @router.post("/{cafe_id}/drinks", response_model=Drink, status_code=201)

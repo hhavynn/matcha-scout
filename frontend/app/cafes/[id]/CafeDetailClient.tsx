@@ -50,6 +50,68 @@ export default function CafeDetailClient({ cafe, initialDrinks, cafeMap, reviewT
               <h1 className="ms-display" style={{ fontSize: 28, margin: 0, color: "#2a3124" }}>
                 {cafe.name}
               </h1>
+              {cafe.beli_rating != null && (
+                <span
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    color: "#ffffff",
+                    background: "#1e293b",
+                    border: "1px solid #0f172a",
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                    flexShrink: 0,
+                  }}
+                >
+                  Beli: {cafe.beli_rating.toFixed(1)}
+                </span>
+              )}
+              {cafe.is_popup && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "#d97706",
+                    background: "#fef3c7",
+                    border: "1px solid #fde68a",
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                  }}
+                >
+                  Pop-up
+                </span>
+              )}
+              {cafe.business_status && cafe.business_status !== "open" && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: cafe.business_status === "upcoming" ? "#7c3aed" : "#9a3412",
+                    background: cafe.business_status === "upcoming" ? "#f3e8ff" : "#fff7ed",
+                    border: `1px solid ${cafe.business_status === "upcoming" ? "#e9d5ff" : "#fed7aa"}`,
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {cafe.business_status}
+                </span>
+              )}
+              {cafe.ceremonial_matcha && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "#44563a",
+                    background: "#edf3e5",
+                    border: "1px solid #cdd9b8",
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                  }}
+                >
+                  Ceremonial matcha
+                </span>
+              )}
               {cafe.source === "yelp" && (
                 <span
                   style={{
@@ -74,6 +136,11 @@ export default function CafeDetailClient({ cafe, initialDrinks, cafeMap, reviewT
                 {cafe.address}
               </p>
             )}
+            {cafe.status_note && (
+              <p style={{ fontSize: 12.5, color: "#8c5d35", margin: "0 0 6px", maxWidth: 680 }}>
+                {cafe.status_note}
+              </p>
+            )}
             {(cafe.rating != null || cafe.review_count != null || cafe.price) && (
               <div
                 className="flex flex-wrap gap-x-3 gap-y-1 items-center"
@@ -90,9 +157,42 @@ export default function CafeDetailClient({ cafe, initialDrinks, cafeMap, reviewT
                 {cafe.price && <span>{cafe.price}</span>}
               </div>
             )}
+            {cafe.menu_summary && (
+              <div
+                style={{
+                  maxWidth: 680,
+                  marginTop: 12,
+                  padding: "11px 13px",
+                  borderRadius: 13,
+                  background: "#f5f2ea",
+                  boxShadow: "inset 0 0 0 1px #e0dbc8",
+                  color: "#585e4d",
+                  fontSize: 13,
+                  lineHeight: 1.55,
+                }}
+              >
+                {cafe.menu_summary}
+                {cafe.menu_verified_at && (
+                  <div style={{ color: "#8c8a78", fontSize: 11.5, marginTop: 4 }}>
+                    Menu research checked {new Date(cafe.menu_verified_at).toLocaleDateString()}.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-2 items-start">
+            {cafe.menu_url && (
+              <a
+                href={cafe.menu_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ms-btn ms-btn-primary ms-btn-sm"
+                style={{ textDecoration: "none" }}
+              >
+                Official menu / source ↗
+              </a>
+            )}
             {cafe.external_url && (
               <a
                 href={cafe.external_url}
@@ -104,7 +204,7 @@ export default function CafeDetailClient({ cafe, initialDrinks, cafeMap, reviewT
                 View on Yelp ↗
               </a>
             )}
-            {cafe.website && (
+            {cafe.website && cafe.website !== cafe.menu_url && (
               <a
                 href={cafe.website}
                 target="_blank"

@@ -80,7 +80,7 @@ export default function DrinkCard({ drink, cafeName }: Props) {
               )}
             </div>
             <span className="ms-mono" style={{ fontSize: 14, color: "#44563a", fontWeight: 500, flexShrink: 0 }}>
-              ${drink.price.toFixed(2)}
+              {drink.price == null ? "Price unavailable" : `$${drink.price.toFixed(2)}`}
             </span>
           </div>
 
